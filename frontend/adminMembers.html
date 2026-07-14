@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin - Member List</title>
+
+<style>
+table{
+    border-collapse:collapse;
+    width:95%;
+    margin:auto;
+    font-family:Arial;
+}
+td,th{
+    border:1px solid gray;
+    padding:8px;
+    font-size:13px;
+}
+th{
+    background:#f0f0f0;
+}
+button{
+    padding:6px 10px;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body style="text-align:center;font-family:Arial;">
+
+<h2>📋 Admin Member List</h2>
+
+<!-- SORT -->
+<label>Sort By:</label>
+<select id="sortBy">
+    <option value="">-- Select --</option>
+    <option value="city">City</option>
+    <option value="state">State</option>
+    <option value="country">Country</option>
+    <option value="NativeLocation">Native Location</option>
+</select>
+
+<!-- VALUE -->
+<label>Value:</label>
+<select id="sortValue">
+    <option value="">-- Select Value --</option>
+</select>
+
+<br><br>
+
+<button onclick="copyAll()">📋 Copy List</button>
+
+<br><br>
+
+<table id="memberTable"></table>
+
+<br>
+<button onclick="location.href='adminPanel.html'">⬅ Back</button>
+
+
+
+
+
+
+
+<script>
+
+let filterData = {};
+let lastListText = "";
+
+/* =========================
+   LOAD FILTER VALUES
+========================= */
+async function loadFilterValues() {
+   // const res = await fetch("http://localhost:3000/get-member-filter-values");
+    const res = await fetch("/get-member-filter-values");
+
+    filterData = await res.json();
+}
+
+/* =========================
+   POPULATE DROPDOWN
+========================= */
+document.getElementById("sortBy").addEventListener("change", function () {
+
+    const sortValue = document.getElementById("sortValue");
+    sortValue.innerHTML = `<option value="">-- Select Value --</option>`;
+
+    let list = [];
+
+    if (this.value === "city") list = filterData.cities || [];
+    if (this.value === "state") list = filterData.states || [];
+    if (this.value === "country") list = filterData.countries || [];
+    if (this.value === "NativeLocation") list = filterData.natives || [];
+
+    list.forEach(v => {
+        sortValue.innerHTML += `<option value="${v}">${v}</option>`;
+    });
+
+    loadMembers();
+});
+
+/* =========================
+   VALUE CHANGE
+========================= */
+document.getElementById("sortValue").addEventListener("change", function () {
+    loadMembers();
+});
+
+/* =========================
+   LOAD MEMBERS
+========================= */
+async function loadMembers(){
+
+    const sortBy = document.getElementById("sortBy").value;
+    const filterValue = document.getElementById("sortValue").value;
+
+    const res = await fetch(
+       // "http://localhost:3000/admin-members?sortBy=" + sortBy +
+        "/admin-members?sortBy=" + sortBy +
+        "&filterValue=" + encodeURIComponent(filterValue)
+    );
+
+    const result = await res.json();
+
+    const table = document.getElementById("memberTable");
+    table.innerHTML = "";
+
+    if(!result.success){
+        table.innerHTML = "<tr><td>Error loading members</td></tr>";
+        return;
+    }
+
+    table.innerHTML += `
+        <tr>
+            <th>First</th>
+            <th>Last</th>
+            <th>Mobile</th>
+            <th>Email</th>
+            <th>City</th>
+            <th>State</th>
+            <th>Country</th>
+            <th>Native</th>
+        </tr>
+    `;
+
+    lastListText = "";
+
+    result.members.forEach(m => {
+
+        const rowText =
+        `${m.firstName} ${m.lastName}, ${m.mobileNumber}, ${m.EmailAddress}, ${m.city}, ${m.state}, ${m.country}, ${m.NativeLocation}`;
+
+        lastListText += rowText + "\n";
+
+        table.innerHTML += `
+            <tr>
+                <td>${m.firstName}</td>
+                <td>${m.lastName}</td>
+                <td>${m.mobileNumber}</td>
+                <td>${m.EmailAddress}</td>
+                <td>${m.city}</td>
+                <td>${m.state}</td>
+                <td>${m.country}</td>
+                <td>${m.NativeLocation}</td>
+            </tr>
+        `;
+    });
+}
+
+/* =========================
+   COPY ALL
+========================= */
+
+
+function copyAll() {
+
+    const table = document.getElementById("memberTable");
+
+    const html = table.outerHTML;
+
+    const blobHTML = new Blob([html], { type: "text/html" });
+    const blobText = new Blob([table.innerText], { type: "text/plain" });
+
+    const data = [new ClipboardItem({
+        "text/html": blobHTML,
+        "text/plain": blobText
+    })];
+
+    navigator.clipboard.write(data).then(() => {
+        alert("Table copied with full formatting!");
+    });
+}
+
+
+
+
+
+
+
+
+
+/* =========================
+   INIT
+========================= */
+window.onload = async function(){
+    await loadFilterValues();
+    await loadMembers();
+};
+
+</script>
+
+</body>
+</html>

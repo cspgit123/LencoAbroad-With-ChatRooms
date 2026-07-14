@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Append - LencoAbroad</title>
+</head>
+<body style="text-align:center; font-family:Arial;">
+
+<h2>Append Data</h2>
+
+<form id="appendForm">
+    <input placeholder="Username" id="username" required><br><br>
+   
+   // <textarea id="data"
+        placeholder="Enter your data here..."
+        rows="8"
+        cols="60"
+        style="font-size:20px;"></textarea><br><br>
+
+    <button type="submit">Append</button>
+</form>
+
+<div id="resultSection" style="margin-top:20px;"></div>
+
+<script>
+document.getElementById("appendForm").onsubmit = async function(e) {
+    e.preventDefault();
+
+   // const response = await fetch("http://localhost:3000/append", {
+    const response = await fetch("/append", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+ 
+body:JSON.stringify({
+    username: localStorage.getItem("username"),
+    data: data.value
+})       
+
+ });
+
+    const result = await response.json();
+
+    if(result.message === "Data appended successfully.") {
+
+        document.getElementById("appendForm").style.display = "none";
+
+        const resultDiv = document.getElementById("resultSection");
+
+        resultDiv.innerHTML = `
+            <h3 style="color:green;">Data appended successfully.</h3>
+            <button onclick="appendMore()">Append More Data</button>
+            <br><br>
+            <a href="index.html">Go to Index Page</a>
+        `;
+
+    } else {
+        alert(result.message);
+    }
+};
+
+function appendMore() {
+    document.getElementById("appendForm").reset();
+    document.getElementById("appendForm").style.display = "block";
+    document.getElementById("resultSection").innerHTML = "";
+}
+</script>
+
+</body>
+</html>

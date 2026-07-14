@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat Login</title>
+</head>
+
+<body style="font-family:Arial; margin:30px;">
+
+<h2>Member Login</h2>
+
+<input id="username" placeholder="Username"><br><br>
+<input id="password" type="password" placeholder="Password"><br><br>
+
+<button onclick="memberLogin()">LOGIN</button>
+
+<script>
+//const API = "http://localhost:3001/chat";
+
+const API = "/chat";
+
+async function memberLogin(){
+
+  let username = document.getElementById("username").value.trim();
+  let password = document.getElementById("password").value.trim();
+
+  if(!username || !password){
+    alert("Enter username and password");
+    return;
+  }
+
+  let res = await fetch(API + "/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    credentials: "include",
+    body: JSON.stringify({ username, password })
+  });
+
+  let data = await res.json();
+
+  if(data.success){
+
+    localStorage.setItem("username", data.member.username);
+    localStorage.setItem("firstName", data.member.firstName);
+    localStorage.setItem("lastName", data.member.lastName);
+
+    alert("Login successful");
+    window.location.href = "/chat/chatrooms.html";
+
+ 
+  } else {
+    alert(data.message);
+  }
+}
+</script>
+
+</body>
+</html>

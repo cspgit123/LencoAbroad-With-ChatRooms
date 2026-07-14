@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat Rooms</title>
+  <style>
+    body { font-family: Arial; margin:5px; }
+
+    .top { display:flex; justify-content:space-between; margin-bottom:10px; }
+    .room { border:1px solid #ccc; padding:10px; margin-bottom:10px; border-radius:5px; }
+    .btn { padding:6px 10px; cursor:pointer; background:#007bff; color:white; border:none; border-radius:4px; }
+    .btn-danger {background:blue; }
+    .btn-gray { background:gray; cursor:not-allowed; }
+    .hidden { display:none; }
+    .creatorTag { color:green; font-weight:bold; }
+  </style>
+</head>
+
+
+
+<body>
+
+<h3>Active Chat Rooms</h3>
+<div class="top">
+        <a href="chatLogin.html" id="loginLink">LOGIN TO JOIN/CREATE ROOM</a> 
+   
+  <div>
+<a href="adminLogin.html">ADMIN LOGIN</a>
+ <button class="btn btn-danger" onclick="adminLogout()">ADMIN LOGOUT</button>
+   </div>
+
+</div>
+
+<div id="memberInfo"></div>
+
+<div id="createBox" class="hidden">
+
+  <a href="#" onclick="memberLogout()" style="color:red; font-weight:bold; float:center;">
+    LOGOUT
+  </a>
+<br>
+  <h4>Create New Room</h4>
+  <input type="text" id="subject" placeholder="Enter Subject" style="width:300px;">
+  <button class="btn" onclick="createRoom()">Create</button>
+</div>
+
+<hr>
+
+<div id="roomsList">Loading rooms...</div>
+
+<script>
+//const API = "http://localhost:3001/chat";
+
+const API = "/chat";
+
+
+async function loadRooms() {
+
+  let res = await fetch(API + "/get-chatrooms", { credentials: "include" });
+  let data = await res.json();
+
+  if(!data.success){
+    document.getElementById("roomsList").innerHTML = "Error loading rooms";
+    return;
+  }
+
+  // check joined room (member only)
+  let joinedRoomId = null;
+
+  let joinedRes = await fetch(API + "/my-joined-room", { credentials: "include" });
+  let joinedData = await joinedRes.json();
+
+  if(joinedData.success && joinedData.joined){
+    joinedRoomId = joinedData.room.roomId;
+  }
+
+  let currentUsername = localStorage.getItem("username");
+  let isAdmin = (localStorage.getItem("isAdmin") === "true");
+
+  let html = "";
+
+  data.rooms.forEach(r => {
+
+    let creatorTag = "";
+    if(currentUsername && String(r.creatorUsername).trim() === String(currentUsername).trim()){
+      creatorTag = ` <span class="creatorTag">(CREATOR)</span>`;
+    }
+
+    html += `<div class="room">
+      <b>${r.subject}</b> ${creatorTag}<br>
+      Created By: ${r.creatorName}<br>
+      Date: ${r.createdDate}<br><br>
+    `;
+
+    // ----------------------------
+    // ADMIN MODE (VIEW ONLY)
+    // ----------------------------
+    if(isAdmin){
+      html += `
+        <button class="btn" onclick="viewRoom('${r.roomId}')">VIEW ROOM</button>
+      `;
+    }
+
+    // ----------------------------
+    // MEMBER MODE
+    // ----------------------------
+    else {
+
+      if(joinedRoomId){
+
+        if(joinedRoomId === r.roomId){
+          html += `
+            <button class="btn" onclick="enterRoom('${r.roomId}')">ENTER ROOM</button>
+            <button class="btn btn-danger" onclick="leaveRoom()">LEAVE ROOM</button>
+          `;
+        } else {
+          html += `
+            <button class="btn btn-gray" disabled>JOIN DISABLED</button>
+          `;
+        }
+
+      } else {
+        html += `
+          <button class="btn" onclick="joinRoom('${r.roomId}')">JOIN</button>
+        `;
+      }
+    }
+
+    // ----------------------------
+    // DELETE BUTTON (ADMIN or CREATOR)
+    // ----------------------------
+    let deleteBtn = "";
+
+    if(isAdmin){
+      deleteBtn = `<button class="btn btn-danger" onclick="deleteRoom('${r.roomId}')">DELETE ROOM</button>`;
+    }
+    else if(currentUsername && String(r.creatorUsername).trim() === String(currentUsername).trim()){
+      deleteBtn = `<button class="btn btn-danger" onclick="deleteRoom('${r.roomId}')">DELETE ROOM</button>`;
+    }
+
+    html += `<br><br>${deleteBtn}`;
+
+    html += `</div>`;
+  });
+
+  document.getElementById("roomsList").innerHTML = html || "No Active Rooms";
+}
+
+async function joinRoom(roomId){
+
+  let res = await fetch(API + "/join-room/" + roomId, {
+    method: "POST",
+    credentials: "include"
+  });
+
+  let data = await res.json();
+
+  if(!data.success){
+    alert(data.message);
+    return;
+  }
+
+  alert("Joined Room: " + roomId);
+  window.location.href = "chatroom.html?roomId=" + roomId;
+}
+
+
+function enterRoom(roomId){
+  window.location.href = "chatroom.html?roomId=" + roomId;
+}
+
+
+function viewRoom(roomId){
+  window.location.href = "chatroom.html?roomId=" + roomId;
+}
+
+
+async function leaveRoom(){
+
+  let res = await fetch(API + "/leave-room", {
+    method: "POST",
+    credentials: "include"
+  });
+
+  let data = await res.json();
+
+  if(data.success){
+    alert("You left the room.");
+    loadRooms();
+  } else {
+    alert(data.message);
+  }
+}
+
+
+async function createRoom(){
+  let subject = document.getElementById("subject").value.trim();
+  if(!subject){
+    alert("Enter subject");
+    return;
+  }
+
+  let res = await fetch(API + "/create-chatroom", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    credentials:"include",
+    body: JSON.stringify({ subject })
+  });
+
+  let data = await res.json();
+
+  if(data.success){
+    alert("Room Created: " + data.room.roomId);
+    document.getElementById("subject").value = "";
+    loadRooms();
+  } else {
+    alert(data.message);
+  }
+}
+
+
+
+function showMember(){
+
+  let firstName = localStorage.getItem("firstName");
+  let lastName  = localStorage.getItem("lastName");
+  let username  = localStorage.getItem("username");
+  let isAdmin   = localStorage.getItem("isAdmin");
+
+  // MEMBER LOGGED IN
+  if(username){
+    document.getElementById("memberInfo").innerHTML =
+      "<b>Logged in as:</b> " + firstName + " " + lastName +
+      " <span style='color:blue;'>(Member)</span>";
+
+    document.getElementById("createBox").classList.remove("hidden");
+    document.getElementById("loginLink").style.display = "none";
+  }
+
+  // ADMIN LOGGED IN
+  if(isAdmin === "true"){
+    document.getElementById("memberInfo").innerHTML =
+      "<b>Logged in as:</b> ADMIN <span style='color:red;'>(Admin)</span>";
+  }
+}
+
+
+async function deleteRoom(roomId){
+
+  if(!confirm("Are you sure you want to delete room " + roomId + " ?\nAll messages and uploaded files will be deleted permanently.")){
+    return;
+  }
+
+  let res = await fetch(API + "/delete-room/" + roomId, {
+    method: "DELETE",
+    credentials: "include"
+  });
+
+  let data = await res.json();
+
+  if(data.success){
+    alert("Room deleted successfully");
+    loadRooms();
+  } else {
+    alert(data.message);
+  }
+}
+
+
+async function memberLogout(){
+
+  let res = await fetch(API + "/logout", {
+    credentials: "include"
+  });
+
+  let data = await res.json();
+
+  if(data.success){
+    localStorage.removeItem("username");
+    localStorage.removeItem("firstName");
+    localStorage.removeItem("lastName");
+
+    alert("Logged out successfully");
+    window.location.href = "chatrooms.html";
+  } else {
+    alert("Logout failed");
+  }
+}
+
+
+async function adminLogout(){
+
+  let res = await fetch("/chat/admin-logout", {
+    method: "GET",
+    credentials: "include"
+  });
+
+  let data = await res.json();
+
+  if(data.success){
+
+    localStorage.removeItem("isAdmin");
+
+    alert("Admin logged out");
+
+    document.getElementById("memberInfo").innerHTML = "";
+    showMember();
+    loadRooms();
+
+  } else {
+    alert("Logout failed");
+  }
+}
+
+
+
+
+showMember();
+loadRooms();
+</script>
+
+</body>
+</html>

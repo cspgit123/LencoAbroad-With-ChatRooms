@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Events Portal - LencoAbroad</title>
+
+<style>
+body{
+    margin:0;
+    font-family: Arial;
+    background:#eef2f7;
+}
+
+/* HEADER */
+.header{
+    background: darkgreen;
+    color:white;
+    padding:12px;
+    font-size:20px;
+    text-align:center;
+}
+
+/* TICKER */
+.ticker{
+    background:#111;
+    color:#fff;
+    padding:8px;
+    overflow:hidden;
+    white-space:nowrap;
+}
+
+.ticker span{
+    display:inline-block;
+    padding-left:100%;
+    animation: scroll 15s linear infinite;
+}
+
+@keyframes scroll{
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+}
+
+/* CONTAINER */
+.container{
+    max-width:900px;
+    margin:auto;
+    padding:15px;
+}
+
+/* HIGHLIGHT EVENT */
+.highlight{
+    background:white;
+    padding:15px;
+    border-left:6px solid darkgreen;
+    margin-bottom:15px;
+    border-radius:8px;
+    box-shadow:0 2px 6px rgba(0,0,0,0.1);
+    display:flex;
+    gap:15px;
+    align-items:flex-start;
+}
+
+.highlight img{
+    width:180px;
+    height:120px;
+    object-fit:cover;
+    border-radius:8px;
+    border:1px solid #ddd;
+}
+
+.highlightText{
+    flex:1;
+}
+
+/* EVENT CARD */
+.card{
+    background:white;
+    padding:12px;
+    margin-bottom:10px;
+    border-radius:8px;
+    border-left:4px solid #333;
+    display:flex;
+    gap:12px;
+    align-items:flex-start;
+}
+
+.card img{
+    width:140px;
+    height:90px;
+    object-fit:cover;
+    border-radius:6px;
+    border:1px solid #ddd;
+}
+
+.cardText{
+    flex:1;
+}
+
+.title{ font-weight:bold; font-size:16px; }
+.date{ font-size:12px; color:gray; margin-bottom:5px; }
+
+.btnDelete{
+    background:red;
+    color:white;
+    border:none;
+    padding:6px 10px;
+    border-radius:6px;
+    cursor:pointer;
+    margin-top:8px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">LencoAbroad EVENTS PORTAL</div>
+
+<div class="ticker">
+    <span id="tickerText">Loading latest events...</span>
+</div>
+
+<div class="container">
+
+    <div id="highlight" class="highlight">Loading highlight...</div>
+
+    <div id="eventList"></div>
+
+</div>
+
+<script>
+async function deleteEvent(id){
+    if(!confirm("Delete this Event?")) return;
+
+    const res = await fetch("/delete-event", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ id })
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+        alert("Deleted successfully");
+        loadEvents();
+    } else {
+        alert("Delete failed: " + data.message);
+    }
+}
+
+async function loadEvents(){
+
+    const res = await fetch("/get-events");
+    const data = await res.json();
+
+    if(!data.rows || data.rows.length <= 1){
+        document.getElementById("tickerText").innerText = "No events available";
+        document.getElementById("highlight").innerHTML = "No highlight event available";
+        document.getElementById("eventList").innerHTML = "";
+        return;
+    }
+
+    let rows = data.rows.slice(1);
+
+    // Latest first
+    rows.reverse();
+
+    // TICKER (top 5 titles)
+    let ticker = rows.slice(0,5).map(r => r[1]).join("  •  ");
+    document.getElementById("tickerText").innerText = ticker;
+
+    // HIGHLIGHT (latest event)
+    const top = rows[0];
+    let topImg = top[4] ? top[4] : "";
+
+    document.getElementById("highlight").innerHTML =
+        `
+        ${topImg ? `<img src="${topImg}" alt="event image">` : ""}
+        <div class="highlightText">
+            <div class="title">${top[1]}</div>
+            <div class="date">${top[2]}</div>
+            <div>${top[3]}</div>
+            <button class="btnDelete" onclick="deleteEvent('${top[0]}')">Delete</button>
+        </div>
+        `;
+
+    // LIST
+    let html = "";
+    for(let r of rows.slice(1)){
+        let img = r[4] ? r[4] : "";
+
+        html += `
+        <div class="card">
+            ${img ? `<img src="${img}" alt="event image">` : ""}
+            <div class="cardText">
+                <div class="title">${r[1]}</div>
+                <div class="date">${r[2]}</div>
+                <div>${r[3]}</div>
+                <button class="btnDelete" onclick="deleteEvent('${r[0]}')">Delete</button>
+            </div>
+        </div>`;
+    }
+
+    document.getElementById("eventList").innerHTML = html;
+}
+
+loadEvents();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<title>Edit Personal File</title>
+
+<style>
+table {
+    border-collapse: collapse;
+    width: 90%;
+    margin: auto;
+}
+
+td {
+    border: 5px solid #ccc;
+    padding: 8px;
+    vertical-align: top;
+}
+
+input {
+    width: 100%;
+    border: none;
+    outline: none;
+}
+
+textarea {
+    width: 100%;
+    border: none;
+    outline: none;
+    resize: vertical;
+}
+
+/* Header row */
+tr:first-child td {
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+
+/* Alternate rows */
+tr:nth-child(even) {
+    background-color: #fafafa;
+}
+
+/* Hover effect */
+tr:hover {
+    background-color: #f5f5f5;
+}
+
+#dataTable td:first-child {
+    width: 90px;
+}
+</style>
+</head>
+
+
+<body style="text-align:center;font-family:Arial;">
+
+<h2>Edit Personal File</h2>
+
+<h3 id="codeBox" style="color:blue;"></h3>
+
+<div style="display:flex; gap:15px; width:95%; margin:auto;">
+
+    <!-- LEFT PERSONAL INFO -->
+    <div style="width:260px; max-height:500px; overflow-y:auto; border:2px solid black;">
+        <table border="1" id="infoTable" style="width:100%; font-size:12px; text-align:left;"></table>
+    </div>
+
+    <!-- RIGHT ACTIVITY TABLE -->
+   
+<table border="1" id="dataTable" style="width:100%; table-layout:fixed;"></table>
+
+</div>
+
+<br>
+
+
+
+<div class="button-container">
+
+
+<button onclick="addRow()" 
+style="
+padding:10px 25px;
+border:2px solid green;
+border-radius:8px;
+background:white;
+color:green;
+font-weight:bold;
+cursor:pointer;
+margin-right: 30px;
+">➕ Activity:::      Add Text OR Upload Photo/Video</button>
+
+<a href="index.html">Back to Home</a>
+
+
+ <button type="button" onclick="saveData()"
+style="
+padding:10px 25px;
+border:2px solid green;
+border-radius:8px;
+background:white;
+color:green;
+font-weight:bold;
+cursor:pointer;
+margin-left: 30px;
+">
+SAVE CHANGE
+
+</div>
+
+
+<script>
+
+
+function showMemberCode(){
+    const code = localStorage.getItem("memberCode");
+
+    if(code){
+        document.getElementById("codeBox").innerHTML =
+            "Member Code: <span style='color:red;font-weight:bold;'>" + code + "</span>";
+    }
+}
+
+const username = localStorage.getItem("username");
+
+async function loadData(){
+
+    const username = localStorage.getItem("username");
+
+   // const res = await fetch("http://localhost:3000/load-personal",{
+    const res = await fetch("/load-personal",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ username })
+    });
+
+    const result = await res.json();
+
+    const table = document.getElementById("dataTable");
+    const infoTable = document.getElementById("infoTable");
+
+    table.innerHTML = "";
+    infoTable.innerHTML = "";
+// RIGHT TABLE heading
+
+
+////table.innerHTML += `
+////<tr>
+////   <td style="font-weight:bold;background:#eee;width:120px;">Date</td>
+//// <td style="font-weight:bold;background:#eee;">Activity</td>
+////</tr>
+////`;
+
+///// 6 ines of TABLE replaced for DELETE command FROM HERE
+
+table.innerHTML += `
+<tr>
+    <td style="font-weight:bold;background:#eee;width:120px;">Date</td>
+    <td style="font-weight:bold;background:#eee;">Activity</td>
+    <td style="font-weight:bold;background:#eee;width:80px;">Delete</td>
+</tr>
+`;
+
+/////6 ines of TABLEreplaced for DELETE command UPTO HERE
+
+    // LEFT TABLE title
+    infoTable.innerHTML += "<tr><td style='font-weight:bold;background:#eee;text-align:center;'>Personal Info</td></tr>";
+
+    // Loop all rows from Excel
+    result.rows.forEach((row,rowIndex)=>{
+           
+            // ✅ skip blank row and header row from excel
+if(rowIndex === 1 || rowIndex === 2){
+    return;
+}
+
+        // FIRST ROW → LEFT TABLE ONLY
+       
+            if(rowIndex === 0){
+            row.forEach(cell=>{
+                infoTable.innerHTML += `<tr><td>${cell || ""}</td></tr>`;
+            });
+            return;
+        }
+
+
+        // OTHER ROWS → RIGHT TABLE
+        const tr = document.createElement("tr");
+
+        row.forEach(cell=>{
+            const td = document.createElement("td");
+           cell = (cell || "").toString().trim().replace(/\\/g,"/");
+
+if(cell.includes("uploads/")){
+               
+                cell = cell.toString().replace(/\\/g,"/");
+
+                const fullName = cell.split("/").pop();
+                const cleanName = fullName.substring(fullName.indexOf("_") + 1);
+
+                const nameDiv = document.createElement("div");
+                nameDiv.innerText = cleanName;
+        
+ const viewLink = document.createElement("a");
+viewLink.href = "#";
+viewLink.innerText = "VIEW";
+viewLink.style.marginRight = "15px";
+
+viewLink.onclick = function(e){
+    e.preventDefault();
+    window.open(
+      //  "http://localhost:3000/" + cell,
+        "/" + cell,
+        "VIEWFILE",
+        "width=700,height=500,left=300,top=150"
+    );
+};
+       
+       const downloadLink = document.createElement("a");
+                //downloadLink.href = "http://localhost:3000/" + cell;
+                downloadLink.href = "/" + cell;
+                downloadLink.innerText = "DOWNLOAD";
+                downloadLink.download = cleanName;
+
+                const linkDiv = document.createElement("div");
+                linkDiv.appendChild(viewLink);
+                linkDiv.appendChild(downloadLink);
+
+                td.appendChild(nameDiv);
+                td.appendChild(linkDiv);
+
+              // ✅ ADD THIS HERE
+    const hidden = document.createElement("input");
+    hidden.type = "hidden";
+    hidden.value = cell;
+    td.appendChild(hidden);
+
+            }
+
+
+else {
+
+    // ✅ Date column (first column)
+    if(tr.children.length === 0){
+
+        const input = document.createElement("input");
+        input.value = cell || "";
+        input.readOnly = true;
+        input.style.background = "#f0f0f0";
+        input.style.fontWeight = "bold";
+        td.appendChild(input);
+
+    } else {
+
+        const textarea = document.createElement("textarea");
+        textarea.rows = 3;
+        textarea.style.width = "100%";
+        textarea.value = cell || "";
+        td.appendChild(textarea);
+
+    }
+}
+
+                             tr.appendChild(td);
+        });
+//////Extra Add 2 for DELETE BUTTON FROM here
+const tdDel = document.createElement("td");
+
+const delBtn = document.createElement("button");
+delBtn.innerText = "DELETE";
+delBtn.style.background = "red";
+delBtn.style.color = "white";
+delBtn.style.border = "none";
+delBtn.style.padding = "6px 10px";
+delBtn.style.cursor = "pointer";
+
+delBtn.onclick = function () {
+    if(confirm("Delete this activity row?")){
+        tr.remove();
+
+delBtn.onclick = function () {
+    if(confirm("Delete this activity permanently?")){
+        tr.remove();
+        saveData();   // ✅ saves updated table into Excel
+    }
+};
+
+
+    }
+ };
+
+
+
+tdDel.appendChild(delBtn);
+tr.appendChild(tdDel);
+   table.appendChild(tr);
+
+    });
+}
+
+function getTodayDate(){
+        const today=new Date();
+
+        const dd=String(today.getDate()).padStart(2,'0');
+       const mm=String(today.getMonth()+1).padStart(2,'0');
+       const yyyy=today.getFullYear();
+       return dd+"/"+mm+"/"+yyyy;
+}
+
+function addRow(){
+        alert("Function running"); // keep for test
+       const table = document.getElementById("dataTable");
+      const tr = document.createElement("tr");
+      // Date
+        const tdDate = document.createElement("td");
+        const dateInput = document.createElement("input");
+
+       dateInput.value = new Date().toLocaleDateString();
+       dateInput.readOnly = true;
+      tdDate.appendChild(dateInput);
+
+       // Activity
+          const tdAct = document.createElement("td");
+         const text = document.createElement("textarea"); 
+         text.rows = 4;
+        text.style.width = "100%";
+
+     const fileInput = document.createElement("input");
+fileInput.type = "file";
+    tdAct.appendChild(text);
+    tdAct.appendChild(document.createElement("br"));
+   tdAct.appendChild(fileInput);
+
+   tr.appendChild(tdDate);
+   tr.appendChild(tdAct);
+
+////ADD 2 from here
+
+// DELETE button column
+const tdDel = document.createElement("td");
+
+const delBtn = document.createElement("button");
+delBtn.innerText = "DELETE";
+delBtn.style.background = "red";
+delBtn.style.color = "white";
+delBtn.style.border = "none";
+delBtn.style.padding = "6px 10px";
+delBtn.style.cursor = "pointer";
+
+delBtn.onclick = function () {
+    if(confirm("Delete this activity permanently?")){
+        tr.remove();
+        saveData();
+    }
+};
+
+tdDel.appendChild(delBtn);
+tr.appendChild(tdDel);
+
+////ADDED 2 upto here
+
+
+   table.appendChild(tr);
+
+}
+
+// File UPLOAD INPUT//
+
+async function saveData(){
+
+    const table = document.getElementById("dataTable");
+    const infoTable = document.getElementById("infoTable");
+    const username = localStorage.getItem("username");
+
+    let rows = [];
+
+            // ----------------------------
+           // 1) PERSONAL INFO (LEFT TABLE)
+          // ----------------------------
+    let personalRow = [];
+
+    for(let i = 1; i < infoTable.rows.length; i++){
+        personalRow.push(infoTable.rows[i].cells[0].innerText.trim());
+    }
+
+
+    rows.push(personalRow);
+    rows.push([""]);
+    rows.push(["Date","Activity"]);
+
+    // ----------------------------
+    // 2) ACTIVITY ROWS (RIGHT TABLE)
+    // ----------------------------
+           ///for(let i = 0; i < table.rows.length; i++){ ///REPLACED
+           for(let i = 1; i < table.rows.length; i++){
+           const r = table.rows[i];
+
+           // safety check: must have 2 columns
+              if(r.cells.length < 2) continue;
+
+        const dateInput = r.cells[0].querySelector("input");
+        const textInput = r.cells[1].querySelector("textarea, input");
+        const fileInput = r.cells[1].querySelector("input[type='file']");
+        const dateValue = dateInput ? dateInput.value : "";
+       
+     let activityValue = "";
+
+// 1) if already saved upload exists, keep it
+       const hiddenPath = r.cells[1].querySelector("input[type='hidden']");
+if(hiddenPath && hiddenPath.value.trim() !== ""){
+    activityValue = hiddenPath.value.trim();
+}
+
+// 2) if user selected a NEW file, upload it (override hidden)
+
+      if(fileInput && fileInput.files.length > 0){
+    console.log("FILE INPUT:", fileInput.files[0]);
+   
+ const formData = new FormData();
+formData.append("username", username);
+formData.append("media", fileInput.files[0]);
+
+    //const res = await fetch("http://localhost:3000/upload",{
+    const res = await fetch("/upload",{
+        method:"POST",
+        body:formData
+    });
+
+    const result = await res.json();
+
+    console.log("UPLOAD RESULT:", result);
+    activityValue = "uploads/" + (result.file || result.filename);
+}
+
+    // 3) if no hidden and no file, take text
+           if(activityValue === ""){
+    activityValue = textInput ? textInput.value.trim().replace(/\n+/g," ") : "";
+}
+
+// 🚫 skip header row if it exists inside table
+         if(dateValue === "Date" && activityValue === "Activity") continue;
+
+        // skip empty rows
+          if(dateValue.trim() === "" && activityValue.trim() === "") continue;
+
+        // skip header row
+          if(dateValue.trim().toLowerCase() === "date" &&         activityValue.trim().toLowerCase() === "activity") continue;
+
+rows.push([dateValue, activityValue]);
+    }
+
+    //await fetch("http://localhost:3000/save-personal",{
+    await fetch("/save-personal",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({username, rows})
+    });
+
+    alert("Saved successfully");
+}
+
+     window.onload = function(){
+                   const username = localStorage.getItem("username");
+
+                  if(!username){
+                      alert("Please login first");
+                      window.location.href = "login.html";
+                      return;
+    }
+
+    showMemberCode();   // ✅ ADD THIS
+
+    loadData();   // ✅ call here
+};
+
+
+
+</script>
+
+</body>
+</html>

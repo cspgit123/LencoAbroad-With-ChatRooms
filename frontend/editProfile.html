@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Edit Profile</title>
+
+<style>
+body{
+    font-family: Arial;
+    margin: 0;
+    padding: 0;
+    background: #f5f5f5;
+}
+
+h2{
+    text-align: center;
+    margin-top: 20px;
+}
+
+form{
+    width: 95%;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.grid{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+label{
+    font-weight: bold;
+    font-size: 14px;
+}
+
+input{
+    width: 100%;
+    padding: 8px;
+    border: 1px solid gray;
+    border-radius: 6px;
+}
+
+.full{
+    grid-column: span 4;
+    text-align: center;
+}
+
+button{
+    padding: 10px 30px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    background: blue;
+    color: white;
+    border-radius: 8px;
+}
+
+button:hover{
+    background: darkblue;
+}
+
+@media(max-width: 900px){
+    .grid{
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .full{
+        grid-column: span 2;
+    }
+}
+
+@media(max-width: 500px){
+    .grid{
+        grid-template-columns: 1fr;
+    }
+    .full{
+        grid-column: span 1;
+    }
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>Edit Your Profile</h2>
+
+<h5 id="codeBox" style="text-align:center;color:red;"></h6>
+
+<form id="editForm">
+
+<div class="grid">
+
+    <div>
+        <label>First Name</label>
+      <input id="firstName" readonly style="background:#eee;">
+    </div>
+
+    <div>
+        <label>Last Name</label>
+        <input id="lastName" readonly style="background:#eee;">
+    </div>
+
+    <div>
+        <label>Spouse Name</label>
+        <input id="spouseName">
+    </div>
+
+    <div>
+        <label>Date of Birth</label>
+        <input type="date" id="dob">
+    </div>
+
+    <div>
+        <label>Degree</label>
+        <input id="degree">
+    </div>
+
+    <div>
+        <label>Branch</label>
+        <input id="branch">
+    </div>
+
+    <div>
+        <label>Graduation Year</label>
+        <input id="graduationYear">
+    </div>
+
+    <div>
+        <label>Masters Branch</label>
+        <input id="mastersBranch">
+    </div>
+
+    <div>
+        <label>Profession</label>
+        <input id="profession">
+    </div>
+
+    <div>
+        <label>Mobile Number</label>
+        <input id="mobileNumber">
+    </div>
+
+    <div>
+        <label>Email</label>
+        <input id="EmailAddress">
+    </div>
+
+    <div>
+        <label>Employer / Business</label>
+        <input id="EmployerBusinessName">
+    </div>
+
+    <div>
+        <label>Country</label>
+        <input id="country">
+    </div>
+
+    <div>
+        <label>State</label>
+        <input id="state">
+    </div>
+
+    <div>
+        <label>City</label>
+        <input id="city">
+    </div>
+
+    <div>
+        <label>Native Location</label>
+        <input id="NativeLocation">
+    </div>
+
+<div>
+    <label>Username</label>
+   <input id="username" readonly style="background:#eee;">
+</div>
+
+<div>
+    <label>New Password</label>
+    <input type="password" id="newPassword" placeholder="Leave blank if no change">
+</div>
+
+
+    <div class="full">
+
+        <button type="submit">Save Changes</button>
+        <br>
+<button type="button" onclick="location.href='personal.html'"
+style="
+padding:12px 25px;
+font-size:16px;
+border:2px solid #0077cc;
+border-radius:8px;
+background:white;
+color:#0077cc;
+font-weight:bold;
+cursor:pointer;
+">
+ADD / EDIT ACTIVITY IN YOUR PERSONAL FILE
+</button>
+<br>
+ <a href="index.html">Back to Home</a>
+    </div>
+
+    </div>
+
+</form>
+
+<script>
+async function loadUserData(){
+
+    const username = localStorage.getItem("username");
+    const memberCode = localStorage.getItem("memberCode");
+
+    if(memberCode){
+        document.getElementById("codeBox").innerHTML =
+            "Member Code: " + memberCode;
+    }
+
+    if(!username){
+        alert("Please login first");
+        window.location.href = "login.html";
+        return;
+    }
+
+   // const res = await fetch("http://localhost:3000/get-user", {
+    const res = await fetch("/get-user", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ username })
+    });
+
+    const result = await res.json();
+    console.log("RESULT FROM SERVER:", result);
+
+    if(!result.success){
+        alert(result.message);
+        return;
+    }
+
+    const u = result.user;
+
+    document.getElementById("firstName").value = u.firstName || "";
+    document.getElementById("lastName").value = u.lastName || "";
+    document.getElementById("spouseName").value = u.spouseName || "";
+    document.getElementById("dob").value = u.dob || "";
+    document.getElementById("degree").value = u.degree || "";
+    document.getElementById("branch").value = u.branch || "";
+    document.getElementById("graduationYear").value = u.graduationYear || "";
+    document.getElementById("mastersBranch").value = u.mastersBranch || "";
+    document.getElementById("profession").value = u.profession || "";
+    document.getElementById("mobileNumber").value = u.mobileNumber || "";
+    document.getElementById("EmailAddress").value = u.EmailAddress || "";
+    document.getElementById("EmployerBusinessName").value = u.EmployerBusinessName || "";
+    document.getElementById("country").value = u.country || "";
+    document.getElementById("state").value = u.state || "";
+    document.getElementById("city").value = u.city || "";
+    document.getElementById("NativeLocation").value = u.NativeLocation || "";
+}
+
+
+// ✅ SAVE FORM
+document.getElementById("editForm").onsubmit = async function(e){
+    e.preventDefault();
+
+    const username = localStorage.getItem("username");
+
+    const updatedData = {
+        spouseName: document.getElementById("spouseName").value,
+        dob: document.getElementById("dob").value,
+        degree: document.getElementById("degree").value,
+        branch: document.getElementById("branch").value,
+        graduationYear: document.getElementById("graduationYear").value,
+        mastersBranch: document.getElementById("mastersBranch").value,
+        profession: document.getElementById("profession").value,
+        mobileNumber: document.getElementById("mobileNumber").value,
+        email: document.getElementById("EmailAddress").value,
+        EmployerBusinessName: document.getElementById("EmployerBusinessName").value,
+        country: document.getElementById("country").value,
+        state: document.getElementById("state").value,
+        city: document.getElementById("city").value,
+        NativeLocation: document.getElementById("NativeLocation").value
+    };
+
+    const newPassword = document.getElementById("newPassword").value;
+    if(newPassword.trim() !== ""){
+        updatedData.newPassword = newPassword;
+    }
+
+    //const res = await fetch("http://localhost:3000/update-profile", {
+    const res = await fetch("/update-profile", {
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body: JSON.stringify({ username, updatedData })
+    });
+
+    const result = await res.json();
+    alert(result.message);
+};
+
+loadUserData();
+</script>
+</body>
+</html>

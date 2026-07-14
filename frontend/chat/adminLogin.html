@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Login</title>
+</head>
+
+<body style="font-family:Arial; margin:40px;">
+
+<h2>Admin Login</h2>
+
+<input id="username" placeholder="Admin Username"><br><br>
+<input id="password" type="password" placeholder="Admin Password"><br><br>
+
+<button onclick="adminLogin()">LOGIN</button>
+
+<button onclick="adminLogout()">ADMIN LOGOUT</button>
+
+
+
+<p><a href="index1.html">Back to Home</a></p>
+
+<script>
+//const API = "http://localhost:3001";
+
+const API = "/chat";
+
+
+async function adminLogin(){
+  let username = document.getElementById("username").value.trim();
+  let password = document.getElementById("password").value.trim();
+
+  let res = await fetch(API + "/admin-login", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    credentials:"include",
+    body: JSON.stringify({ username, password })
+  });
+
+  let data = await res.json();
+
+  if(data.success){
+    alert("Admin login successful");
+    localStorage.setItem("isAdmin", "true");
+
+    window.location.href = "chatrooms.html";
+
+  } else {
+    alert(data.message);
+  }
+}
+
+
+
+
+
+async function adminLogout(){
+
+  let res = await fetch("/chat/admin-logout", {
+    method: "GET",
+    credentials: "include"
+  });
+
+  let data = await res.json();
+
+  if(data.success){
+
+    localStorage.removeItem("isAdmin");
+
+    alert("Admin logged out successfully");
+    window.location.href = "/chat/chatrooms.html";
+
+  } else {
+    alert("Logout failed");
+  }
+}
+
+
+
+
+
+
+
+
+</script>
+
+</body>
+</html>

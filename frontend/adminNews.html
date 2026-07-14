@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin - News Manager</title>
+
+<style>
+body{ font-family:Arial; background:#f4f6f9; padding:20px; }
+.box{ max-width:900px; background:white; padding:20px; border-radius:10px; margin:auto; }
+
+input, textarea{
+  width:100%;
+  padding:10px;
+  margin-top:6px;
+  margin-bottom:12px;
+}
+
+button{
+  padding:7px 12px;
+  border:none;
+  cursor:pointer;
+  border-radius:6px;
+}
+
+.btnSave{ background:darkblue; color:white; }
+.btnEdit{ background:orange; color:white; }
+.btnDelete{ background:red; color:white; }
+
+.card{
+  background:#fff;
+  border:1px solid #ddd;
+  padding:12px;
+  margin-top:10px;
+  border-radius:8px;
+}
+
+.title{ font-weight:bold; font-size:16px; }
+.date{ color:gray; font-size:12px; margin-bottom:6px; }
+
+img{ max-width:180px; border-radius:8px; margin-top:8px; }
+</style>
+</head>
+
+<body>
+
+<div class="box">
+<h2>News Manager</h2>
+
+<h3>Add New News</h3>
+
+<form id="newsForm" enctype="multipart/form-data">
+    <label>Title</label>
+    <input type="text" name="title" required>
+
+    <label>Date</label>
+    <input type="text" name="date" required>
+
+    <label>Description</label>
+    <textarea name="description" required></textarea>
+
+    <label>Image</label>
+    <input type="file" name="image" accept="image/*">
+
+    <button type="submit" class="btnSave">Save News</button>
+</form>
+
+<hr>
+
+<h3>Existing News List</h3>
+<div id="newsList">Loading...</div>
+
+</div>
+
+<script>
+async function loadNews(){
+    const res = await fetch("/get-news");
+    const data = await res.json();
+
+    if(!data.rows || data.rows.length <= 1){
+        document.getElementById("newsList").innerHTML = "No News Found";
+        return;
+    }
+
+    let rows = data.rows.slice(1);
+    rows.reverse();
+
+    let html = "";
+
+    for(let r of rows){
+        let id = r[0];
+        let title = r[1];
+        let date = r[2];
+        let desc = r[3];
+        let img = r[4];
+
+        html += `
+        <div class="card">
+            <div class="title">${title}</div>
+            <div class="date">${date} | ID: ${id}</div>
+            <div>${desc}</div>
+            ${img ? `<img src="${img}">` : ""}
+            <br><br>
+            <button class="btnEdit" onclick="editNews('${id}','${title}','${date}','${desc.replace(/'/g,"&#39;")}')">Edit</button>
+            <button class="btnDelete" onclick="deleteNews('${id}')">Delete</button>
+        </div>`;
+    }
+
+    document.getElementById("newsList").innerHTML = html;
+}
+
+async function deleteNews(id){
+    if(!confirm("Delete this News?")) return;
+
+    const res = await fetch("/delete-news", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ id })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+    loadNews();
+}
+
+async function editNews(id,title,date,desc){
+    let newTitle = prompt("Edit Title:", title);
+    if(newTitle === null) return;
+
+    let newDate = prompt("Edit Date:", date);
+    if(newDate === null) return;
+
+    let newDesc = prompt("Edit Description:", desc);
+    if(newDesc === null) return;
+
+    const res = await fetch("/update-news", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({
+            id:id,
+            title:newTitle,
+            date:newDate,
+            description:newDesc
+        })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+    loadNews();
+}
+
+
+// ADD NEWS FORM
+document.getElementById("newsForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    const res = await fetch("/add-news", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await res.json();
+    alert(data.message);
+
+    if(data.success){
+        this.reset();
+        loadNews();
+    }
+});
+
+loadNews();
+</script>
+
+</body>
+</html>

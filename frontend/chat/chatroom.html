@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Chat Room</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .roomTitle {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    .btn {
+      padding: 6px 10px;
+      cursor: pointer;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .btn-danger {
+      background: red;
+    }
+
+    .btn-gray {
+      background: gray;
+    }
+
+    #messagesBox {
+      border: 1px solid #ccc;
+      height: 350px;
+      overflow-y: scroll;
+      padding: 10px;
+      border-radius: 6px;
+      background: #fafafa;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    td {
+      border-bottom: 1px solid #ddd;
+      padding: 8px;
+      vertical-align: top;
+    }
+
+    td.nameCol {
+      width: 25%;
+      font-weight: bold;
+      color: #333;
+    }
+
+    td.msgCol {
+      width: 75%;
+    }
+
+    .msgTime {
+      font-size: 11px;
+      color: gray;
+    }
+
+    .mediaBox {
+      margin-top: 5px;
+    }
+
+    .sendBox {
+      margin-top: 15px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 6px;
+      background: #f0f0f0;
+    }
+
+    textarea {
+      width: 100%;
+      height: 70px;
+      padding: 8px;
+      font-size: 14px;
+    }
+
+
+.mainArea {
+  display: flex;
+  gap: 15px;
+}
+
+.leftPanel {
+  width: 70%;
+}
+
+.rightPanel {
+  width: 30%;
+}
+
+  </style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <div>
+    <div class="roomTitle" id="roomTitle">Loading Room...</div>
+    <div id="roomInfo"></div>
+  </div>
+
+  <div>
+    <button class="btn btn-gray" onclick="goBack()">ROOM LIST</button>
+    <button class="btn btn-danger" onclick="logout()">LOGOUT</button>
+  </div>
+</div>
+
+<hr>
+
+
+<div class="mainArea">
+
+  <!-- LEFT SIDE: MESSAGES -->
+  <div class="leftPanel">
+    <h3>Messages</h3>
+    <div id="messagesBox">Loading messages...</div>
+  </div>
+
+  <!-- RIGHT SIDE: SEND BOX -->
+  <div class="rightPanel">
+    <div class="sendBox">
+      <h3>Send Message</h3>
+
+      <textarea id="messageText" placeholder="Write your message here..."></textarea>
+      <br><br>
+
+      <label><b>Select Image / Video / PDF:</b></label><br>
+      <input type="file" id="mediaFile">
+      <br><br>
+
+<button class="btn" onclick="sendMessage()">SEND</button>
+
+<button class="btn btn-gray" id="micBtn" onclick="startSpeech()">🎤 MIC</button>
+
+<button class="btn btn-danger" onclick="stopSpeech()">⛔ STOP</button>
+
+<span id="micStatus" style="margin-left:10px; font-weight:bold; color:gray;">
+  Mic OFF
+</span>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+//const API = "http://localhost:3001/chat";
+
+const API = "/chat";
+
+
+
+function getRoomId(){
+  const params = new URLSearchParams(window.location.search);
+  return params.get("roomId");
+}
+
+
+
+
+let recognition = null;
+
+function startSpeech(){
+
+  if(!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)){
+    alert("Speech recognition not supported. Use Chrome/Edge.");
+    return;
+  }
+
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+  recognition.interimResults = false;
+  recognition.maxAlternatives = 1;
+
+  document.getElementById("micStatus").innerHTML = "🔴 Listening...";
+  document.getElementById("micStatus").style.color = "red";
+  document.getElementById("micBtn").style.background = "green";
+
+  recognition.onresult = function(event){
+    let speechText = event.results[0][0].transcript;
+
+    let box = document.getElementById("messageText");
+    box.value = box.value + " " + speechText;
+  };
+
+  recognition.onerror = function(event){
+    alert("Speech Error: " + event.error);
+  };
+
+  recognition.onend = function(){
+    document.getElementById("micStatus").innerHTML = "Mic OFF";
+    document.getElementById("micStatus").style.color = "gray";
+    document.getElementById("micBtn").style.background = "gray";
+  };
+
+function stopSpeech(){
+
+  if(recognition){
+    recognition.stop();
+  }
+
+  document.getElementById("micStatus").innerHTML = "Mic OFF";
+  document.getElementById("micStatus").style.color = "gray";
+  document.getElementById("micBtn").style.background = "gray";
+}
+
+  recognition.start();
+}
+
+
+
+/*✅ Step 3: (Optional) Change language
+
+If you want Hindi:
+
+recognition.lang = "hi-IN";
+
+Gujarati (sometimes supported):
+
+recognition.lang = "gu-IN";
+
+✅ Result
+Member clicks 🎤 MIC → speaks → words appear in textarea → press SEND.*/
+
+
+
+async function loadRoomDetails(){
+  const roomId = getRoomId();
+  if(!roomId){
+    alert("RoomId missing");
+    window.location.href = "chatrooms.html";
+    return;
+  }
+
+  let res = await fetch(API + "/get-room/" + roomId, { credentials: "include" });
+  let data = await res.json();
+
+  if(!data.success){
+    alert(data.message);
+    window.location.href = "chatrooms.html";
+    return;
+  }
+
+  document.getElementById("roomTitle").innerText = "Room: " + data.room.subject;
+  document.getElementById("roomInfo").innerHTML =
+    "<b>Created By:</b> " + data.room.creatorName +
+    " | <b>Date:</b> " + data.room.createdDate;
+}
+
+
+async function loadMessages(){
+  const roomId = getRoomId();
+
+  let res = await fetch(API + "/get-messages/" + roomId, { credentials: "include" });
+  let data = await res.json();
+
+  if(!data.success){
+    document.getElementById("messagesBox").innerHTML =
+      "<span style='color:red;'>" + data.message + "</span>";
+    return;
+  }
+
+
+  let html = "<table>";
+
+  data.messages.forEach(m => {
+
+    let msgText = m.message || "";
+
+    let mediaHtml = "";
+
+
+if(m.mediaFile){
+  let fileUrl = API + "/download/" + m.mediaFile;
+
+  let downloadLink = `
+    <div class="mediaBox">
+      <a href="${fileUrl}" download style="color:blue; font-weight:bold;">
+        ⬇ DOWNLOAD FILE
+      </a>
+    </div>
+  `;
+
+  if(m.mediaType.startsWith("image")){
+    mediaHtml = `
+      <div class="mediaBox">
+        <img src="${fileUrl}" width="200"><br>
+        ${downloadLink}
+      </div>`;
+  }
+  else if(m.mediaType.startsWith("video")){
+    mediaHtml = `
+      <div class="mediaBox">
+        <video width="250" controls>
+          <source src="${fileUrl}" type="${m.mediaType}">
+        </video>
+        ${downloadLink}
+      </div>`;
+  }
+  else if(m.mediaType.includes("pdf")){
+    mediaHtml = `
+      <div class="mediaBox">
+        <a href="${fileUrl}" target="_blank">📄 View PDF</a><br>
+        ${downloadLink}
+      </div>`;
+  }
+  else {
+    mediaHtml = downloadLink;
+  }
+}
+
+  
+
+
+
+    html += `
+      <tr>
+        <td class="nameCol">
+          ${m.senderName}<br>
+          <span class="msgTime">${m.dateTime}</span>
+        </td>
+        <td class="msgCol">
+          ${msgText}
+          ${mediaHtml}
+        </td>
+      </tr>
+    `;
+  });
+
+  html += "</table>";
+
+  document.getElementById("messagesBox").innerHTML = html;
+
+  // auto scroll to bottom
+  let box = document.getElementById("messagesBox");
+  box.scrollTop = box.scrollHeight;
+}
+
+async function sendMessage(){
+  const roomId = getRoomId();
+  const message = document.getElementById("messageText").value.trim();
+  const fileInput = document.getElementById("mediaFile");
+
+  if(message === "" && fileInput.files.length === 0){
+    alert("Please type message or select file");
+    return;
+  }
+
+  let formData = new FormData();
+  formData.append("roomId", roomId);
+  formData.append("message", message);
+
+  if(fileInput.files.length > 0){
+    formData.append("media", fileInput.files[0]);
+  }
+
+  let res = await fetch(API + "/send-message", {
+    method: "POST",
+    credentials: "include",
+    body: formData
+  });
+
+  let data = await res.json();
+
+  if(data.success){
+    document.getElementById("messageText").value = "";
+    document.getElementById("mediaFile").value = "";
+    loadMessages();
+  } else {
+    alert(data.message);
+  }
+}
+
+function goBack(){
+  window.location.href = "chatrooms.html";
+}
+
+async function logout(){
+  let res = await fetch(API + "/logout", { credentials: "include" });
+  let data = await res.json();
+
+  if(data.success){
+    localStorage.removeItem("username");
+    localStorage.removeItem("firstName");
+    localStorage.removeItem("lastName");
+
+    alert("Logged out successfully");
+    window.location.href = "chatrooms.html";
+  } else {
+    alert("Logout failed");
+  }
+}
+loadRoomDetails();
+loadMessages();
+setInterval(loadMessages, 3001);
+
+</script>
+
+</body>
+</html>

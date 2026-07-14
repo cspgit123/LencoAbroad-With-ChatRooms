@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>LencoAbroad Alumni</title>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    font-family: Arial;
+}
+
+/* Background watermark */
+body {
+    background: url("images/big1.jpg") no-repeat center top;
+    background-size: cover;
+    min-height: 100vh;
+}
+
+/* Whole page layout */
+.mainContainer {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    height: calc(100vh - 10px);
+    padding: 2px;
+    box-sizing: border-box;
+}
+
+/* Left and right side pics area */
+.sideArea{
+    width: 25%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    align-content: flex-start;
+    overflow-y: auto;
+    padding-top: 10px;
+}
+
+/* Center main content */
+.centerBox {
+    width: 50%;
+    text-align: center;
+    padding: 15px;
+    background: rgba(255,255,255,0.85);
+    border-radius: 1px;
+}
+
+.centerBox h1 {
+    margin-top: 5px;
+}
+
+.centerBox img {
+    border-radius: 8px;
+}
+
+.linksRow {
+    display: flex;
+    justify-content: center;
+    gap: 2cm;
+    margin-top: 20px;
+}
+
+.linksRow a {
+    font-size: 18px;
+    font-weight: bold;
+    text-decoration: none;
+    color: blue;
+}
+
+.linksRow a:hover {
+    color: darkred;
+}
+
+.adminLink {
+    font-size: 12px;
+    color: gray;
+    text-decoration: none;
+}
+
+/* OPTION DROPDOWN */
+.optionBox {
+    padding: 8px;
+    margin-bottom: 10px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 6px;
+    display: inline-block;
+    font-size: 14px;
+}
+
+/* ---------------- OPTION 1 (ONE COLUMN BIGGER PICS) ---------------- */
+.option1 .sideArea img {
+    width: 220px !important;
+    height: 150px !important;
+}
+
+/* ---------------- OPTION 2 (ONE BIG PIC EACH SIDE) ---------------- */
+.option2 .sideArea {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.option2 .sideArea > div {
+    width: 100% !important;
+}
+
+.option2 .sideArea img {
+    width: 95% !important;
+    height: 320px !important;
+}
+
+.option2 .sideArea div {
+    font-size: 16px !important;
+}
+
+.option2 .sideArea b {
+    font-size: 18px !important;
+}
+
+/* Hide extra pics in Option2 */
+.option2 .sideArea > div:nth-child(n+2) {
+    display: none !important;
+}
+
+</style>
+</head>
+
+<body class="option1">
+
+<div class="mainContainer">
+
+    <!-- LEFT SIDE PICS -->
+    <div id="leftArea" class="sideArea"></div>
+
+    <!-- CENTER MAIN CONTENT -->
+    <div class="centerBox">
+
+        <div class="optionBox">
+            <b>Select Display:</b>
+            <select id="displayMode">
+                <option value="option1">Option 1: One Column Bigger Pics</option>
+                <option value="option2">Option 2: One Big Pic Each Side</option>
+            </select>
+        </div>
+
+        <h1>Welcome to LencoAbroad</h1>
+
+        <img src="images/pic1.jpeg" alt="Small Logo" width="100"><br><br>
+
+        <img src="images/pic2.jpeg" alt="Main Banner" width="500">
+
+        <p style="font-size:18px;">
+            Lukhadhirji College of Engineering<br>
+            Morbi, Gujarat<br>
+            India
+        </p>
+       
+        <div class="linksRow">
+            <a href="register.html">REGISTER</a>
+            <a href="login.html">LOGIN</a>
+        </div>
+
+        <br><br>
+        <a href="adminLogin.html" class="adminLink">Admin Login</a>
+
+    </div> 
+
+    <!-- RIGHT SIDE PICS -->
+    <div id="rightArea" class="sideArea"></div> 
+
+</div>
+
+<script>
+async function loadSidePics(){
+
+  //  const res = await fetch("http://localhost:3000/get-indexpics");
+    const res = await fetch("/get-indexpics");
+    const result = await res.json();
+
+    if(!result.rows || result.rows.length <= 1){
+        return;
+    }
+
+    const leftArea = document.getElementById("leftArea");
+    const rightArea = document.getElementById("rightArea");
+
+    leftArea.innerHTML = "";
+    rightArea.innerHTML = "";
+
+    let leftCols = {};
+    let rightCols = {};
+
+    for(let i=1; i<result.rows.length; i++){
+
+        const side = (result.rows[i][0] || "").toLowerCase().trim();
+        const col  = (result.rows[i][1] || "1").toString().trim();
+        const pic  = (result.rows[i][2] || "").trim();
+        const title= (result.rows[i][3] || "").trim();
+        const note = (result.rows[i][4] || "").trim();
+
+        if(pic === "") continue;
+
+        const item = { pic, title, note };
+
+        if(side === "left"){
+            if(!leftCols[col]) leftCols[col] = [];
+            leftCols[col].push(item);
+        }
+
+        if(side === "right"){
+            if(!rightCols[col]) rightCols[col] = [];
+            rightCols[col].push(item);
+        }
+    }
+
+    function createColumn(picList){
+        const colDiv = document.createElement("div");
+        colDiv.style.display = "flex";
+        colDiv.style.flexDirection = "column";
+        colDiv.style.gap = "12px";
+
+        picList.forEach(p => {
+
+            const box = document.createElement("div");
+            box.style.textAlign = "center";
+            box.style.fontSize = "12px";
+
+            const img = document.createElement("img");
+            img.src = "images/" + p.pic;
+
+            img.onerror = function () {
+                box.remove();
+            };
+
+            img.style.width = "120px";
+            img.style.height = "80px";
+            img.style.objectFit = "cover";
+            img.style.border = "1px solid gray";
+            img.style.borderRadius = "6px";
+
+            const titleDiv = document.createElement("div");
+            titleDiv.innerHTML = "<b>" + p.title + "</b>";
+
+            const noteDiv = document.createElement("div");
+            noteDiv.innerHTML = p.note;
+
+            box.appendChild(img);
+            if(p.title) box.appendChild(titleDiv);
+            if(p.note) box.appendChild(noteDiv);
+
+            colDiv.appendChild(box);
+        });
+
+        return colDiv;
+    }
+
+    Object.keys(leftCols).sort().forEach(c=>{
+        leftArea.appendChild(createColumn(leftCols[c]));
+    });
+
+    Object.keys(rightCols).sort().forEach(c=>{
+        rightArea.appendChild(createColumn(rightCols[c]));
+    });
+}
+
+window.onload = function(){
+    loadSidePics();
+
+    // Dropdown option switch (ONLY CSS changes)
+    document.getElementById("displayMode").addEventListener("change", function(){
+        document.body.className = this.value;
+    });
+};
+</script>
+
+</body>
+</html>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin - Events Manager</title>
+
+<style>
+body{ font-family:Arial; background:#eef2f7; padding:20px; }
+.box{ max-width:900px; background:white; padding:20px; border-radius:10px; margin:auto; }
+
+input, textarea{
+  width:100%;
+  padding:10px;
+  margin-top:6px;
+  margin-bottom:12px;
+}
+
+button{
+  padding:7px 12px;
+  border:none;
+  cursor:pointer;
+  border-radius:6px;
+}
+
+.btnSave{ background:darkgreen; color:white; }
+.btnEdit{ background:orange; color:white; }
+.btnDelete{ background:red; color:white; }
+
+.card{
+  background:#fff;
+  border:1px solid #ddd;
+  padding:12px;
+  margin-top:10px;
+  border-radius:8px;
+}
+
+.title{ font-weight:bold; font-size:16px; }
+.date{ color:gray; font-size:12px; margin-bottom:6px; }
+
+img{ max-width:180px; border-radius:8px; margin-top:8px; }
+</style>
+</head>
+
+<body>
+
+<div class="box">
+<h2>Events Manager</h2>
+
+<h3>Add New Event</h3>
+
+<form id="eventForm" enctype="multipart/form-data">
+    <label>Title</label>
+    <input type="text" name="title" required>
+
+    <label>Date</label>
+    <input type="text" name="date" required>
+
+    <label>Description</label>
+    <textarea name="description" required></textarea>
+
+    <label>Image</label>
+    <input type="file" name="image" accept="image/*">
+
+    <button type="submit" class="btnSave">Save Event</button>
+</form>
+
+<hr>
+
+<h3>Existing Events List</h3>
+<div id="eventList">Loading...</div>
+
+</div>
+
+<script>
+async function loadEvents(){
+    const res = await fetch("/get-events");
+    const data = await res.json();
+
+    if(!data.rows || data.rows.length <= 1){
+        document.getElementById("eventList").innerHTML = "No Events Found";
+        return;
+    }
+
+    let rows = data.rows.slice(1);
+    rows.reverse();
+
+    let html = "";
+
+    for(let r of rows){
+        let id = r[0];
+        let title = r[1];
+        let date = r[2];
+        let desc = r[3];
+        let img = r[4];
+
+        html += `
+        <div class="card">
+            <div class="title">${title}</div>
+            <div class="date">${date} | ID: ${id}</div>
+            <div>${desc}</div>
+            ${img ? `<img src="${img}">` : ""}
+            <br><br>
+            <button class="btnEdit" onclick="editEvent('${id}','${title}','${date}','${desc.replace(/'/g,"&#39;")}')">Edit</button>
+            <button class="btnDelete" onclick="deleteEvent('${id}')">Delete</button>
+        </div>`;
+    }
+
+    document.getElementById("eventList").innerHTML = html;
+}
+
+async function deleteEvent(id){
+    if(!confirm("Delete this Event?")) return;
+
+    const res = await fetch("/delete-event", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({ id })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+    loadEvents();
+}
+
+async function editEvent(id,title,date,desc){
+    let newTitle = prompt("Edit Title:", title);
+    if(newTitle === null) return;
+
+    let newDate = prompt("Edit Date:", date);
+    if(newDate === null) return;
+
+    let newDesc = prompt("Edit Description:", desc);
+    if(newDesc === null) return;
+
+    const res = await fetch("/update-event", {
+        method:"POST",
+        headers:{ "Content-Type":"application/json" },
+        body: JSON.stringify({
+            id:id,
+            title:newTitle,
+            date:newDate,
+            description:newDesc
+        })
+    });
+
+    const data = await res.json();
+    alert(data.message);
+    loadEvents();
+}
+
+
+// ADD EVENT FORM
+document.getElementById("eventForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    const res = await fetch("/add-event", {
+        method: "POST",
+        body: formData
+    });
+
+    const data = await res.json();
+    alert(data.message);
+
+    if(data.success){
+        this.reset();
+        loadEvents();
+    }
+});
+
+loadEvents();
+</script>
+
+</body>
+</html>

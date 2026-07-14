@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<title>Welcome Messages</title>
+
+<style>
+table{
+    border-collapse:collapse;
+    width:90%;
+    margin:auto;
+    font-family:Arial;
+}
+td,th{
+    border:1px solid gray;
+    padding:10px;
+}
+th{
+    background:#f0f0f0;
+}
+button{
+    padding:6px 10px;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body style="text-align:center; font-family:Arial;">
+
+<h2>🎉 Welcome Messages (New Members)</h2>
+
+<table id="welTable"></table>
+
+<br>
+<button onclick="location.href='index.html'">🏠 Home</button>
+
+<script>
+if(localStorage.getItem("adminLoggedIn") !== "true"){
+    alert("Admin login required");
+    window.location.href = "adminLogin.html";
+}
+
+async function loadWelcome(){
+
+    //const res = await fetch("http://localhost:3000/get-welcome");
+    const res = await fetch("/get-welcome");
+    const result = await res.json();
+
+    const table = document.getElementById("welTable");
+    table.innerHTML = "";
+
+    if(!result.rows || result.rows.length <= 1){
+        table.innerHTML = "<tr><td>No welcome messages yet.</td></tr>";
+        return;
+    }
+
+    table.innerHTML += `
+        <tr>
+            <th>Date</th>
+            <th>Welcome Message</th>
+            <th>Copy</th>
+            <th>WhatsApp</th>
+            <th>Delete</th>
+        </tr>
+    `;
+
+    for(let i = result.rows.length - 1; i >= 1; i--){
+
+        const date = result.rows[i][0] || "";
+        const msg  = result.rows[i][1] || "";
+
+        const safeMsg = msg.replace(/'/g,"\\'");
+
+        table.innerHTML += `
+            <tr>
+                <td style="width:120px;">${date}</td>
+                <td style="text-align:left;">${msg}</td>
+
+                <td style="width:80px;">
+                    <button onclick="copyMsg('${safeMsg}')">COPY</button>
+                </td>
+
+                <td style="width:100px;">
+                    <button onclick="sendWhatsApp('${safeMsg}')">SEND</button>
+                </td>
+
+                <td style="width:80px;">
+                    <button onclick="deleteMsg(${i})">DELETE</button>
+                </td>
+            </tr>
+        `;
+    }
+}
+
+function copyMsg(msg){
+    navigator.clipboard.writeText(msg)
+    .then(()=>{
+        alert("Copied! Now paste into WhatsApp.");
+    })
+    .catch(()=>{
+        alert("Copy failed. Please copy manually.");
+    });
+}
+
+function sendWhatsApp(msg){
+    const phone = "919999999999";   // change number
+    const url = "https://wa.me/" + phone + "?text=" + encodeURIComponent(msg);
+    window.open(url, "_blank");
+}
+
+async function deleteMsg(rowIndex){
+
+    if(!confirm("Delete this welcome message?")) return;
+
+  //  await fetch("http://localhost:3000/delete-welcome",{
+    await fetch("/delete-welcome",{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({ rowIndex })
+    });
+
+    alert("Deleted successfully");
+    loadWelcome();
+}
+
+// load messages when page opens
+loadWelcome();
+</script>
+
+</body>
+</html>

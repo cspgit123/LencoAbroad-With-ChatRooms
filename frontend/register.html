@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Register</title>
+
+<style>
+body{
+    font-family: Arial;
+    margin: 0;
+    padding: 0;
+    background: #f5f5f5;
+}
+
+h2{
+    text-align: center;
+    margin-top: 20px;
+}
+
+form{
+    width: 95%;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.grid{
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+}
+
+label{
+    font-weight: bold;
+    font-size: 14px;
+}
+
+input, select{
+    width: 100%;
+    padding: 8px;
+    border: 1px solid gray;
+    border-radius: 6px;
+}
+
+.full{
+    grid-column: span 4;
+    text-align: center;
+}
+
+button{
+    padding: 10px 30px;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+    background: green;
+    color: white;
+    border-radius: 8px;
+}
+
+button:hover{
+    background: darkgreen;
+}
+
+@media(max-width: 900px){
+    .grid{
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .full{
+        grid-column: span 2;
+    }
+}
+
+@media(max-width: 500px){
+    .grid{
+        grid-template-columns: 1fr;
+    }
+    .full{
+        grid-column: span 1;
+    }
+}
+</style>
+
+</head>
+
+<body>
+
+<h2>New Member Registration</h2>
+
+<form id="form">
+
+<div class="grid">
+
+    <div>
+        <label>First Name</label>
+        <input id="firstName" required>
+    </div>
+
+    <div>
+        <label>Last Name</label>
+        <input id="lastName" required>
+    </div>
+
+    <div>
+        <label>Spouse Name</label>
+        <input id="spouseName">
+    </div>
+
+    <div>
+        <label>Date of Birth</label>
+        <input type="date" id="dob">
+    </div>
+
+    <div>
+        <label>Degree</label>
+        <input id="degree">
+    </div>
+
+    <div>
+        <label>Branch</label>
+        <input id="branch">
+    </div>
+
+    <div>
+        <label>Graduation Year</label>
+        <input id="graduationYear">
+    </div>
+
+    <div>
+        <label>Masters Branch</label>
+        <input id="mastersBranch">
+    </div>
+
+    <div>
+        <label>Profession</label>
+        <input id="profession">
+    </div>
+
+    <div>
+        <label>Mobile Number</label>
+        <input id="mobileNumber">
+    </div>
+
+    <div>
+        <label>Email Address</label>
+        <input type="email" id="EmailAddress" required>
+    </div>
+
+    <div>
+        <label>Employer / Business Name</label>
+        <input id="EmployerBusinessName">
+    </div>
+
+  <div>
+    <label>Country</label>
+    <select id="country" required></select>
+    <input id="countryOther" placeholder="Enter new country" style="display:none; margin-top:5px;">
+</div>
+
+<div>
+    <label>State</label>
+    <select id="state" required></select>
+    <input id="stateOther" placeholder="Enter new state" style="display:none; margin-top:5px;">
+</div>
+
+<div>
+    <label>City</label>
+    <select id="city" required></select>
+    <input id="cityOther" placeholder="Enter new city" style="display:none; margin-top:5px;">
+</div>
+
+    <div>
+        <label>Native Location</label>
+        <input id="NativeLocation">
+    </div>
+
+    <div>
+        <label>Username</label>
+        <input id="username" required>
+    </div>
+
+    <div>
+        <label>Password</label>
+        <input type="password" id="password" required>
+    </div>
+
+    <div>
+        <label>Recommender Member Code</label>
+        <input id="recommenderCode" placeholder="LEN-XXXXXX" required>
+    </div>
+
+    <div></div>
+
+   <div class="full">
+        <button type="submit">Register</button>
+        <br><br>
+        <a href="index.html">Back to Home</a>
+    </div>
+
+</div>
+
+</form>
+
+<script>
+
+async function loadLocationDropdowns() {
+
+   // const response = await fetch("http://localhost:3000/get-location-list");
+const response = await fetch("/get-location-list");
+
+    const data = await response.json();
+    console.log(data);
+
+    // COUNTRY DROPDOWN
+    const countrySelect = document.getElementById("country");
+    countrySelect.innerHTML = `<option value="">-- Select Country --</option>`;
+    data.countries.forEach(c => {
+        countrySelect.innerHTML += `<option value="${c}">${c}</option>`;
+    });
+    countrySelect.innerHTML += `<option value="OTHER">Other (Add New)</option>`;
+
+    // STATE DROPDOWN
+    const stateSelect = document.getElementById("state");
+    stateSelect.innerHTML = `<option value="">-- Select State --</option>`;
+    data.states.forEach(s => {
+        stateSelect.innerHTML += `<option value="${s}">${s}</option>`;
+    });
+    stateSelect.innerHTML += `<option value="OTHER">Other (Add New)</option>`;
+
+    // CITY DROPDOWN
+    const citySelect = document.getElementById("city");
+    citySelect.innerHTML = `<option value="">-- Select City --</option>`;
+    data.cities.forEach(c => {
+        citySelect.innerHTML += `<option value="${c}">${c}</option>`;
+    });
+    citySelect.innerHTML += `<option value="OTHER">Other (Add New)</option>`;
+}
+
+
+// SHOW / HIDE "OTHER"
+document.getElementById("country").addEventListener("change", function () {
+    document.getElementById("countryOther").style.display =
+        (this.value === "OTHER") ? "block" : "none";
+});
+
+document.getElementById("state").addEventListener("change", function () {
+    document.getElementById("stateOther").style.display =
+        (this.value === "OTHER") ? "block" : "none";
+});
+
+document.getElementById("city").addEventListener("change", function () {
+    document.getElementById("cityOther").style.display =
+        (this.value === "OTHER") ? "block" : "none";
+});
+
+window.onload = loadLocationDropdowns;
+
+
+// FORM SUBMIT
+document.getElementById("form").onsubmit = async function(e){
+    e.preventDefault();
+
+    //const response = await fetch("http://localhost:3000/register", {
+    const response = await fetch("/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+
+            firstName: document.getElementById("firstName").value,
+            lastName: document.getElementById("lastName").value,
+            spouseName: document.getElementById("spouseName").value,
+            dob: document.getElementById("dob").value,
+            degree: document.getElementById("degree").value,
+            branch: document.getElementById("branch").value,
+            graduationYear: document.getElementById("graduationYear").value,
+            mastersBranch: document.getElementById("mastersBranch").value,
+            profession: document.getElementById("profession").value,
+            mobileNumber: document.getElementById("mobileNumber").value,
+            EmailAddress: document.getElementById("EmailAddress").value,
+            EmployerBusinessName: document.getElementById("EmployerBusinessName").value,
+
+            country: (document.getElementById("country").value === "OTHER")
+                ? document.getElementById("countryOther").value
+                : document.getElementById("country").value,
+
+            state: (document.getElementById("state").value === "OTHER")
+                ? document.getElementById("stateOther").value
+                : document.getElementById("state").value,
+
+            city: (document.getElementById("city").value === "OTHER")
+                ? document.getElementById("cityOther").value
+                : document.getElementById("city").value,
+
+            NativeLocation: document.getElementById("NativeLocation").value,
+            username: document.getElementById("username").value,
+            password: document.getElementById("password").value,
+            recommenderCode: document.getElementById("recommenderCode").value
+        })
+    });
+
+    const result = await response.json();
+
+    alert(result.message);
+
+    if(result.memberCode){
+        alert("Your Member Code is: " + result.memberCode);
+    }
+};
+
+</script>
+
+
+</body>
+</html>

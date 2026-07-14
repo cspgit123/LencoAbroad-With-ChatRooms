@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+//<head>
+  //  <title>Forgot Password</title>
+//</head>
+<body>
+    <h2>Forgot Password</h2>
+
+    <form id="forgotForm">
+        Username:<br>
+        <input type="text" id="username" required><br><br>
+
+        Email:<br>
+        <input type="EmailAddress" id="email" required><br><br>
+
+        New Password:<br>
+        <input type="password" id="newPassword" required><br><br>
+
+        <button type="submit">Reset Password</button>
+    </form>
+
+    <p id="message"></p>
+
+    <script>
+        document.getElementById("forgotForm").addEventListener("submit", async function(e) {
+            e.preventDefault();
+
+            const response = await fetch("/forgot-password", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    username: document.getElementById("username").value,
+                    email: document.getElementById("email").value,
+                    newPassword: document.getElementById("newPassword").value
+                })
+            });
+
+            const data = await response.json();
+            document.getElementById("message").innerText = data.message;
+        });
+    </script>
+</body>
+</html>

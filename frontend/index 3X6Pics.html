@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>LencoAbroad Alumni</title>
+
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    font-family: Arial;
+}
+
+/* Background watermark */
+body {
+    background: url("images/big1.jpg") no-repeat center top;
+    background-size: cover;
+    min-height: 100vh;
+}
+
+/* Whole page layout */
+.mainContainer {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    height: calc(100vh - 10px);  /* ✅ leaves bottom 10px clearance */
+    padding: 2px;
+    box-sizing: border-box;
+ }
+
+/* Left and right side pics area */
+.sideBox {
+    width: 25%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    align-content: flex-start;
+}
+
+/* each pic card */
+.picCard {
+    width: 45%;
+    border: 1px solid gray;
+    padding: 5px;
+    background: rgba(255,255,255,0.8);
+    border-radius: 6px;
+}
+
+.picCard img {
+    width: 100%;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 5px;
+}
+
+.picTitle {
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+.picNote {
+    font-size: 11px;
+    color: #444;
+}
+
+/* Center main content */
+.centerBox {
+    width: 50%;
+    text-align: center;
+    padding: 15px;
+    background: rgba(255,255,255,0.85);
+    border-radius: 1px;
+}
+
+.centerBox h1 {
+    margin-top: 5px;
+}
+
+.centerBox img {
+    border-radius: 8px;
+}
+
+.linksRow {
+    display: flex;
+    justify-content: center;
+    gap: 2cm;
+    margin-top: 20px;
+}
+
+.linksRow a {
+    font-size: 18px;
+    font-weight: bold;
+    text-decoration: none;
+    color: blue;
+}
+
+.linksRow a:hover {
+    color: darkred;
+}
+
+.adminLink {
+    font-size: 12px;
+    color: gray;
+    text-decoration: none;
+}
+
+.sideArea{
+    width: 40%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    align-content: flex-start;
+
+    overflow-y: auto;   /* scroll if content exceeds height */
+}
+#leftArea{
+    margin-left: 10px;      /* clearance from left edge */
+    margin-right: -10px;    /* reduce gap with center */
+}
+
+
+</style>
+</head>
+
+<body>
+
+<div class="mainContainer">
+
+    <!-- LEFT SIDE PICS -->
+   <div id="leftArea" class="sideArea"></div>
+//<div id="leftArea" style="display:flex; gap:15px; margin-top:25px;"></div>
+
+    <!-- CENTER MAIN CONTENT -->
+    <div class="centerBox">
+
+        <h1>Welcome to LencoAbroad</h1>
+
+        <img src="images/pic1.jpeg" alt="Small Logo" width="100"><br><br>
+
+        <img src="images/pic2.jpeg" alt="Main Banner" width="500">
+
+        <p style="font-size:18px;">
+            Lukhadhirji College of Engineering<br>
+            Morbi, Gujarat<br>
+            India
+        </p>
+       
+        <div class="linksRow">
+            <a href="register.html">REGISTER</a>
+            <a href="login.html">LOGIN</a>
+            <a href="news.html">NEWS</a>
+            <a href="events.html">EVENTS</a>
+
+         </div>
+
+   
+        <a href="adminLogin.html" class="adminLink">Admin Login</a>
+
+       </div> 
+        <!-- RIGHT SIDE PICS -->
+       <div id="rightArea" class="sideArea"></div> 
+
+  </div>
+
+
+<script>
+async function loadSidePics(){
+
+    //const res = await fetch("http://localhost:3000/get-indexpics");
+    const res = await fetch("/get-indexpics");
+    const result = await res.json();
+
+    if(!result.rows || result.rows.length <= 1){
+        return;
+    }
+
+    // Containers (make sure you have these divs in HTML)
+    const leftArea = document.getElementById("leftArea");
+    const rightArea = document.getElementById("rightArea");
+
+    leftArea.innerHTML = "";
+    rightArea.innerHTML = "";
+
+    // group by side + col
+    let leftCols = {};
+    let rightCols = {};
+
+    for(let i=1; i<result.rows.length; i++){
+
+        const side = (result.rows[i][0] || "").toLowerCase().trim();
+        const col  = (result.rows[i][1] || "1").toString().trim();
+        const pic  = (result.rows[i][2] || "").trim();
+        const title= (result.rows[i][3] || "").trim();
+        const note = (result.rows[i][4] || "").trim();
+
+        if(pic === "") continue;
+
+        const item = { pic, title, note };
+
+        if(side === "left"){
+            if(!leftCols[col]) leftCols[col] = [];
+            leftCols[col].push(item);
+        }
+
+        if(side === "right"){
+            if(!rightCols[col]) rightCols[col] = [];
+            rightCols[col].push(item);
+        }
+    }
+
+    // helper to create column
+    function createColumn(picList){
+        const colDiv = document.createElement("div");
+        colDiv.style.display = "flex";
+        colDiv.style.flexDirection = "column";
+        colDiv.style.gap = "12px";
+
+        picList.forEach(p => {
+
+            const box = document.createElement("div");
+            box.style.textAlign = "center";
+            box.style.fontSize = "12px";
+
+            const img = document.createElement("img");
+            img.src = "images/" + p.pic;
+           img.onerror = function () {
+    box.remove();   // removes broken image card
+};
+
+            img.style.width = "120px";
+            img.style.height = "80px";
+            img.style.objectFit = "cover";
+            img.style.border = "1px solid gray";
+            img.style.borderRadius = "6px";
+
+            const titleDiv = document.createElement("div");
+            titleDiv.innerHTML = "<b>" + p.title + "</b>";
+
+            const noteDiv = document.createElement("div");
+            noteDiv.innerHTML = p.note;
+
+            box.appendChild(img);
+            if(p.title) box.appendChild(titleDiv);
+            if(p.note) box.appendChild(noteDiv);
+
+            colDiv.appendChild(box);
+        });
+
+        return colDiv;
+    }
+
+    // create left columns in sorted order
+    Object.keys(leftCols).sort().forEach(c=>{
+        leftArea.appendChild(createColumn(leftCols[c]));
+    });
+
+    // create right columns in sorted order
+    Object.keys(rightCols).sort().forEach(c=>{
+        rightArea.appendChild(createColumn(rightCols[c]));
+    });
+}
+
+window.onload = function(){
+    loadSidePics();
+};
+</script>
+</body>
+</html>
