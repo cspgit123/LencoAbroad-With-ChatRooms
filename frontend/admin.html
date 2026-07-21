@@ -21,7 +21,7 @@
 document.getElementById("adminForm").onsubmit = async function(e){
     e.preventDefault();
 
-  //  const res = await fetch("http://localhost:3000/admin-login",{
+  //  const res = await fetch("/admin-login",{
     const res = await fetch("/admin-login",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
