@@ -35,7 +35,8 @@ document.getElementById("adminForm").onsubmit = async function(e){
 
     if(result.success){
         localStorage.setItem("adminLoggedIn", "true");
-        window.location.href = "adminPanel.html";
+       // window.location.href = "adminPanel.html";
+      window.location.href = "adminpanel.html";
     } else {
         alert(result.message);
     }
