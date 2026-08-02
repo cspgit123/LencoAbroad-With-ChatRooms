@@ -965,14 +965,20 @@ app.get("/export-member-register", (req, res) => {
 
     // Today's date
     const today = new Date();
+///
+    const now = new Date();
 
-    const yyyy = today.getFullYear();
-    const mm = String(today.getMonth() + 1).padStart(2, "0");
-    const dd = String(today.getDate()).padStart(2, "0");
+const yyyy = now.getFullYear();
+const mm = String(now.getMonth() + 1).padStart(2, "0");
+const dd = String(now.getDate()).padStart(2, "0");
 
-    const fileName =
-        `LencoAbroad_MemberRegister_${yyyy}-${mm}-${dd}.xlsx`;
+const hh = String(now.getHours()).padStart(2, "0");
+const mi = String(now.getMinutes()).padStart(2, "0");
+const ss = String(now.getSeconds()).padStart(2, "0");
 
+const fileName =
+`LencoAbroad_MemberRegister_${yyyy}-${mm}-${dd}_${hh}-${mi}-${ss}.xlsx`;
+///
     const exportFile = path.join(__dirname, fileName);
 
     XLSX.writeFile(wb, exportFile);
