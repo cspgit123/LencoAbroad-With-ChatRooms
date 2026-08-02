@@ -954,6 +954,35 @@ app.get("/admin-members", (req, res) => {
 });
 /////////////////////////////////////////
 
+app.get("/export-member-register", (req, res) => {
+
+    let members = readGlobal();
+
+    // Create workbook
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(members);
+    XLSX.utils.book_append_sheet(wb, ws, "Members");
+
+    // Today's date
+    const today = new Date();
+
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0");
+    const dd = String(today.getDate()).padStart(2, "0");
+
+    const fileName =
+        `LencoAbroad_MemberRegister_${yyyy}-${mm}-${dd}.xlsx`;
+
+    const exportFile = path.join(__dirname, fileName);
+
+    XLSX.writeFile(wb, exportFile);
+
+    res.download(exportFile, fileName);
+
+});
+/////////////////////////////////////////
+
+
 app.get("/get-member-filter-values", (req, res) => {
 
     const filePath = path.join(__dirname, "global_members.xlsx");

@@ -27,12 +27,14 @@ button{
 
 <body style="text-align:center;font-family:Arial;">
 
-<h2>📋 Admin Member List</h2>
+<h2>📋 Admin Member Register</h2>
 
 <!-- SORT -->
 <label>Sort By:</label>
 <select id="sortBy">
     <option value="">-- Select --</option>
+    <option value="firstName">First Name</option>
+    <option value="lastName">Last Name</option>
     <option value="city">City</option>
     <option value="state">State</option>
     <option value="country">Country</option>
@@ -48,6 +50,11 @@ button{
 <br><br>
 
 <button onclick="copyAll()">📋 Copy List</button>
+
+<button onclick="exportRegister()">
+    Export Register
+</button>
+
 
 <br><br>
 
@@ -82,6 +89,8 @@ document.getElementById("sortBy").addEventListener("change", function () {
 
     let list = [];
 
+    if (this.value === "firstName") list = filterData.names || [];
+    if (this.value === "lastName") list = filterData.names || [];
     if (this.value === "city") list = filterData.cities || [];
     if (this.value === "state") list = filterData.states || [];
     if (this.value === "country") list = filterData.countries || [];
@@ -129,12 +138,23 @@ async function loadMembers(){
         <tr>
             <th>First</th>
             <th>Last</th>
+            <th>Spouce</th>
+            <th>Degree</th>
+            <th>Branch</th>
+            <th>PassingYear</th>
+            <th>Masters</th>
+            <th>Profession</th>
             <th>Mobile</th>
             <th>Email</th>
-            <th>City</th>
-            <th>State</th>
+            <th>Business/Employer</th>
             <th>Country</th>
+            <th>State</th>
+            <th>City</th>
             <th>Native</th>
+             <th>code</th>
+             <th>Usermane</th>
+             <th>Date</th>
+
         </tr>
     `;
 
@@ -151,13 +171,23 @@ async function loadMembers(){
             <tr>
                 <td>${m.firstName}</td>
                 <td>${m.lastName}</td>
+                <td>${m.spouseName}</td>
+                <td>${m.degree}</td>
+                <td>${m.branch}</td>
+                <td>${m.graduationYear}</td>
+                <td>${m.mastersBranch}</td>
+                <td>${m.profession}</td>
                 <td>${m.mobileNumber}</td>
                 <td>${m.EmailAddress}</td>
-                <td>${m.city}</td>
-                <td>${m.state}</td>
+                <td>${m.EmployerBusinessName}</td>
                 <td>${m.country}</td>
+                <td>${m.state}</td>
+                <td>${m.city}</td>
                 <td>${m.NativeLocation}</td>
-            </tr>
+                <td>${m.memberCode}</td>
+                <td>${m.username}</td>
+                 <td>${m.date}</td>
+           </tr>
         `;
     });
 }
@@ -194,6 +224,16 @@ window.onload = async function(){
     await loadFilterValues();
     await loadMembers();
 };
+
+
+
+
+function exportRegister() {
+
+    window.location.href = "/export-member-register";
+
+}
+
 
 </script>
 
