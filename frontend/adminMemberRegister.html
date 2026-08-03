@@ -23,6 +23,67 @@ button{
     cursor:pointer;
 }
 </style>
+
+#printHeader{
+    display:none;
+}
+
+@media print{
+
+#printHeader{
+    display:block;
+}
+
+}
+
+<style>
+
+@media print {
+
+@page{
+    size:landscape;
+}
+
+
+    body{
+        margin:15px;
+        font-family:Arial, sans-serif;
+    }
+
+    button{
+        display:none;
+    }
+
+    select{
+        display:none;
+    }
+
+    input{
+        display:none;
+    }
+
+    h1{
+        text-align:center;
+        margin-bottom:5px;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+        font-size:12px;
+    }
+
+    table th,
+    table td{
+        border:1px solid black;
+        padding:4px;
+    }
+
+}
+
+</style>
+
+
 </head>
 
 <body style="text-align:center;font-family:Arial;">
@@ -55,14 +116,35 @@ button{
     Export Register
 </button>
 
-
 <br><br>
+
+
+<button onclick="printRegister()">
+    🖨 Print Register🐇
+</button>
+
+
+
+<div id="printHeader">
+
+<h1>LencoAbroad Alumni Association</h1>
+
+<h2 style="text-align:center;">
+Complete Member Register
+</h2>
+
+<p id="printInfo"
+style="text-align:center;font-weight:bold;">
+</p>
+<div>
+
+
+
 
 <table id="memberTable"></table>
 
 <br>
 <button onclick="location.href='adminPanel.html'">⬅ Back</button>
-
 
 <script>
 
@@ -124,15 +206,26 @@ async function loadMembers(){
         "&filterValue=" + encodeURIComponent(filterValue)
     );
 
-    const result = await res.json();
+   
+ const result = await res.json();
 
     const table = document.getElementById("memberTable");
     table.innerHTML = "";
 
-    if(!result.success){
+  if(!result.success){
         table.innerHTML = "<tr><td>Error loading members</td></tr>";
         return;
     }
+
+ 
+///////
+
+    document.getElementById("printInfo").innerHTML =
+  "Printed on : "
+  + new Date().toLocaleDateString()
+  +
+  " &nbsp;&nbsp;&nbsp;&nbsp; Total Members : "
+  + result.members.length;
 
     table.innerHTML += `
         <tr>
@@ -226,13 +319,18 @@ window.onload = async function(){
 };
 
 
-
-
 function exportRegister() {
 
     window.location.href = "/export-member-register";
 
 }
+
+
+function printRegister() {
+    window.print();
+}
+
+
 
 
 </script>
