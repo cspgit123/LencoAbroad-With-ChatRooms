@@ -33,63 +33,11 @@ body {
     width: 25%;
     display: flex;
     flex-wrap: wrap;
+    gap: 10px;
     justify-content: center;
     align-content: flex-start;
-    overflow: hidden;
+    overflow-y: auto;
     padding-top: 10px;
-}
-
-/* ONLY FIRST COLUMN VISIBLE */
-.sideArea > div:nth-child(n+2) {
-    display: none !important;
-}
-
-/* INSIDE COLUMN: ONLY FIRST PIC BOX VISIBLE */
-.sideArea > div > div:nth-child(n+2) {
-    display: none !important;
-}
-
-/* First picture box should occupy full side */
-.sideArea > div {
-    width: 100%;
-    display: flex;
-    justify-content: center;
-}
-
-/* Pic box styling */
-.sideArea > div > div {
-    width: 95%;
-    height: calc(100vh - 40px);
-    border: 2px solid darkblue;
-    border-radius: 12px;
-    background: rgba(255,255,255,0.92);
-    padding: 10px;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-}
-
-/* IMAGE occupies 75% */
-.sideArea img {
-    width: 100% !important;
-    height: 75% !important;
-    object-fit: cover;
-    border-radius: 10px;
-    border: 2px solid gray;
-}
-
-/* Title & Note occupy 25% */
-.sideArea b {
-    font-size: 20px;
-    display: block;
-    margin-top: 10px;
-}
-
-.sideArea div {
-    font-size: 16px;
-    margin-top: 5px;
-    color: #222;
 }
 
 /* Center main content */
@@ -133,10 +81,55 @@ body {
     text-decoration: none;
 }
 
+/* OPTION DROPDOWN */
+.optionBox {
+    padding: 8px;
+    margin-bottom: 10px;
+    background: rgba(255,255,255,0.9);
+    border-radius: 6px;
+    display: inline-block;
+    font-size: 14px;
+}
+
+/* ---------------- OPTION 1 (ONE COLUMN BIGGER PICS) ---------------- */
+.option1 .sideArea img {
+    width: 220px !important;
+    height: 150px !important;
+}
+
+/* ---------------- OPTION 2 (ONE BIG PIC EACH SIDE) ---------------- */
+.option2 .sideArea {
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.option2 .sideArea > div {
+    width: 100% !important;
+}
+
+.option2 .sideArea img {
+    width: 95% !important;
+    height: 320px !important;
+}
+
+.option2 .sideArea div {
+    font-size: 16px !important;
+}
+
+.option2 .sideArea b {
+    font-size: 18px !important;
+}
+
+/* Hide extra pics in Option2 */
+.option2 .sideArea > div:nth-child(n+2) {
+    display: none !important;
+}
+
 </style>
 </head>
 
-<body>
+<body class="option1">
 
 <div class="mainContainer">
 
@@ -145,6 +138,14 @@ body {
 
     <!-- CENTER MAIN CONTENT -->
     <div class="centerBox">
+
+        <div class="optionBox">
+            <b>Select Display:</b>
+            <select id="displayMode">
+                <option value="option1">Option 1: One Column Bigger Pics</option>
+                <option value="option2">Option 2: One Big Pic Each Side</option>
+            </select>
+        </div>
 
         <h1>Welcome to LencoAbroad</h1>
 
@@ -157,13 +158,10 @@ body {
             Morbi, Gujarat<br>
             India
         </p>
-
+       
         <div class="linksRow">
             <a href="register.html">REGISTER</a>
             <a href="login.html">LOGIN</a>
-            <a href="news.html">NEWS</a>
-            <a href="events.html">EVENTS</a>
-            <a href="/chat/index1.html">CHAT ROOMS</a>
         </div>
 
         <br><br>
@@ -176,13 +174,12 @@ body {
 
 </div>
 
-
 <script>
 async function loadSidePics(){
 
-   // const res = await fetch("http://localhost:3000/get-indexpics");
-       const res = await fetch("/get-indexpics");
-       const result = await res.json();
+  //  const res = await fetch("http://localhost:3000/get-indexpics");
+    const res = await fetch("/get-indexpics");
+    const result = await res.json();
 
     if(!result.rows || result.rows.length <= 1){
         return;
@@ -272,6 +269,11 @@ async function loadSidePics(){
 
 window.onload = function(){
     loadSidePics();
+
+    // Dropdown option switch (ONLY CSS changes)
+    document.getElementById("displayMode").addEventListener("change", function(){
+        document.body.className = this.value;
+    });
 };
 </script>
 

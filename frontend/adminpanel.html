@@ -28,7 +28,32 @@
 </div>
 <br>
 
-<a href="adminMemberRegister.html" style="display:inline-block;padding:10px 15px;background:darkblue;color:white;text-decoration:none;border-radius:6px;">📋 Member Register (City/State/Country)</a>
+<a id="memberRegisterLink"
+   href="adminMemberRegister.html"
+   style="display:inline-block;padding:10px 15px;background:darkblue;color:white;text-decoration:none;border-radius:6px;">
+   📋 Member Register (City/State/Country)
+</a>
+
+
+
+
+<script>
+    const loggedAdmin = localStorage.getItem("admin");
+
+    if (loggedAdmin === "admin2") {
+        document.getElementById("memberRegisterLink").style.display = "none";
+    }
+</script>
+
+
+
+<script>
+    const loggedAdmin = localStorage.getItem("admin");
+
+    if (loggedAdmin === "admin2") {
+        document.getElementById("memberRegisterLink").style.display = "none";
+    }
+</script>
 
 <br><br>
 

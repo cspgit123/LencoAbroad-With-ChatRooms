@@ -33,13 +33,20 @@ document.getElementById("adminForm").onsubmit = async function(e){
 
     const result = await res.json();
 
-    if(result.success){
-        localStorage.setItem("adminLoggedIn", "true");
-       // window.location.href = "adminPanel.html";
-      window.location.href = "adminpanel.html";
-    } else {
-        alert(result.message);
-    }
+  if(result.success){
+
+    localStorage.setItem("adminLoggedIn", "true");
+
+    // Save which administrator logged in
+    localStorage.setItem("admin", result.admin);
+
+    window.location.href = "adminpanel.html";
+
+} else {
+
+    alert(result.message);
+
+}
 };
 </script>
 

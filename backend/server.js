@@ -95,7 +95,7 @@ app.use("/chat" , chatRoomsRoutes);
 const PORT = process.env.PORT || 3000;
 
 const ADMIN_USERNAME = "admin";
-const ADMIN_PASSWORD = "admin123";   // change later
+const ADMIN_PASSWORD = "admin12345";   // change later
 
 
 app.use("/uploads", express.static(path.join(__dirname, "../uploads")));
@@ -209,20 +209,39 @@ function getCurrentDate() {
 }
 
 
+
 // ---------------------------
 // ADMIN LOGIN ROUTE
 // ---------------------------
-  
-/////// Add Adnin Route from here To be removed
-app.post("/admin-login", (req, res) => {
-  const { username, password } = req.body;
- if(username === ADMIN_USERNAME && password === ADMIN_PASSWORD){
-  return res.json({ success:true });
-  }
-   res.json({ success:false, message:"Invalid Admin Login" });
-});
-//////Added Admin Route upto here.
 
+app.post("/admin-login", (req, res) => {
+
+    const { username, password } = req.body;
+
+    // ADMIN 1 - Full Administrator
+    if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
+
+        return res.json({
+            success: true,
+            admin: "admin1"
+        });
+    }
+
+    // ADMIN 2 - Administrator without Member Register
+    if (username === "admin2" && password === "admin12322") {
+
+        return res.json({
+            success: true,
+            admin: "admin2"
+        });
+    }
+
+    res.json({
+        success: false,
+        message: "Invalid Admin Login"
+    });
+
+});
 
 //Update Dropdown Route
 
@@ -231,7 +250,7 @@ app.get("/get-location-list", (req, res) => {
     const filePath = path.join(__dirname, "global_members.xlsx");
 
     if (!fs.existsSync(filePath)) {
-        return res.json({ countries: [], states: [], cities: [] });
+        return res.json({firstNames: [], lastNames:[], countries: [], states: [], cities: [] });
 
 
 
@@ -242,69 +261,122 @@ app.get("/get-member-filter-values", (req, res) => {
     const filePath = path.join(__dirname, "global_members.xlsx");
 
     if (!fs.existsSync(filePath)) {
-        return res.json({ countries: [], states: [], cities: [], natives: [] });
+        return res.json({firstNames: [], lastNames: [], countries: [], states: [], cities: [], natives: [] });
     }
 
     const wb = XLSX.readFile(filePath);
     const ws = wb.Sheets[wb.SheetNames[0]];
     const data = XLSX.utils.sheet_to_json(ws);
 
-    let countries = new Set();
-    let states = new Set();
-    let cities = new Set();
-    let natives = new Set();
+let firstNames = new Set();
+let lastNames = new Set();
+let countries = new Set();
+let states = new Set();
+let cities = new Set();
+let NativeLocations = new Set();
+let branches = new Set();
+let graduationYears = new Set();
+let usernames = new Set();
+let dates = new Set();
+
 
     data.forEach(row => {
+ if (row.firstName) firstNames.add(row.firstName.toString().trim());
+if (row.lastName) lastNames.add(row.lastName.toString().trim());
+if (row.country) countries.add(row.country.toString().trim());
+if (row.state) states.add(row.state.toString().trim());
+if (row.city) cities.add(row.city.toString().trim());
+if (row.NativeLocation) NativeLocations.add(row.NativeLocation.toString().trim());
+if (row.username) usernames.add(row.username.toString().trim());
+if (row.graduationYear) graduationYears.add(row.graduationYear.toString().trim());
+if (row.branch) branches.add(row.branch.toString().trim());
+if (row.date) dates.add(row.date.toString().trim());
 
-        if (row.Country) countries.add(row.Country.toString().trim());
-        if (row.State) states.add(row.State.toString().trim());
-        if (row.City) cities.add(row.City.toString().trim());
-
-        if (row.NativeLocation || row.Native) {
-            natives.add((row.NativeLocation || row.Native).toString().trim());
-        }
+        
 
     });
 
     res.json({
+        firstNames: Array.from(firstNames).sort(),
+        lastNames: Array.from(lastNames).sort(),
         countries: Array.from(countries).sort(),
         states: Array.from(states).sort(),
         cities: Array.from(cities).sort(),
-        natives: Array.from(natives).sort()
+        natives: Array.from(NativeLocations).sort(),
+	usernames: Array.from(usernames).sort(),
+        graduationYears: Array.from(graduationYears).sort(),        
+        branches: Array.from(branches).sort(),
+        dates: Array.from(dates).sort(),
+
+     
     });
 });
 
     }
 
-
-
     const wb = XLSX.readFile(filePath);
     const ws = wb.Sheets[wb.SheetNames[0]];
     const data = XLSX.utils.sheet_to_json(ws);
 
-    let countries = new Set();
-    let states = new Set();
-    let cities = new Set();
+let firstNames = new Set();
+let lastNames = new Set();
+let countries = new Set();
+let states = new Set();
+let cities = new Set();
+let NativeLocations = new Set();
+let years = new Set();
+let branches = new Set();
+let usernames = new Set();
+let dates = new Set();
+
 
    data.forEach(row => {
 
-    let countryValue = row.Country || row.COUNTRY || row.country;
-    let stateValue = row.State || row.STATE || row.state;
-    let cityValue = row.City || row.CITY || row.city;
+let firstNameValue = row.firstName;
+let lastNameValue = row.lastName;
+let countryValue = row.country;
+let stateValue = row.state;
+let cityValue = row.city;
+let NativeLocationValue = row.NativeLocation;
+let branchValue = row.branch;
+let graduationYearValue = row.graduationYear;
+let usernameValue = row.username;
+let dateValue = row.date;
+;
 
+   
+    if (firstNameValue) firstNames.add(firstNameValue.toString().trim());
+    if (lastNameValue) lastNames.add(lastNameValue.toString().trim());
     if (countryValue) countries.add(countryValue.toString().trim());
     if (stateValue) states.add(stateValue.toString().trim());
     if (cityValue) cities.add(cityValue.toString().trim());
+    if (NativeLocationValue) NativeLocations.add(NativeLocationValue.toString().trim());
+if (branchValue)
+    branches.add(branchValue.toString().trim());
+if (graduationYearValue)
+    graduationYears.add(graduationYearValue.toString().trim());    if (branchesValue) branchess.add(branchValue.toString().trim());
+    if (usernameValue) usernames.add(usernameValue.toString().trim());
+    if (dateValue) dates.add(dateValue.toString().trim())
+
 
 });
 
-    res.json({
-        countries: Array.from(countries).sort(),
-        states: Array.from(states).sort(),
-        cities: Array.from(cities).sort()
-    });
+  res.json({
+  
+    firstNames: Array.from(firstNames).sort(),
+    lastNames: Array.from(lastNames).sort(),
+    countries: Array.from(countries).sort(),
+    states: Array.from(states).sort(),
+    cities: Array.from(cities).sort(),
+    NativeLocations: Array.from(NativeLocations).sort(),
+    branches: Array.from(branches).sort(),
+    graduationYears: Array.from(graduationYears).sort(),
+    usernames: Array.from(usernames).sort(),
+    dates: Array.from(dates).sort()
 
 });
+});
+
 
 
 // ---------------------------
@@ -326,9 +398,10 @@ app.post("/register", async (req, res) => {
 
         const {
             firstName, lastName, spouseName, dob, degree, branch, graduationYear,
-            mastersBranch, profession, mobileNumber, EmailAddress, EmployerBusinessName,
-            country, state, city, NativeLocation, username, password, recommenderCode
-        } = req.body;
+             profession, mobileNumber, EmailAddress, EmployerBusinessName,
+            country, state, city, NativeLocation, password, recommenderCode, username, mastersBranch, date
+        
+} = req.body;
 
         let members = readGlobal();
 
@@ -378,7 +451,8 @@ app.post("/register", async (req, res) => {
             password: hashedPassword,
             memberCode: memberCode,
             recommenderCode: recommenderCode,
-            date: getCurrentDate()
+            mastersBranch,
+            date
         };
 
         // save in global file
@@ -926,37 +1000,63 @@ app.post("/upload", upload.single("media"), (req, res) => {
 //////////////////////
 app.get("/admin-members", (req, res) => {
 
-    const sortBy = req.query.sortBy || "city";
+    const sortBy = (req.query.sortBy || "").trim();
     const filterValue = (req.query.filterValue || "").trim().toLowerCase();
 
     let members = readGlobal();
 
-    // keep only required fields
     let filtered = members.map(m => ({
         firstName: m.firstName || "",
         lastName: m.lastName || "",
+        spouseName: m.spouseName || "",
+        degree: m.degree || "",
+        branch: m.branch || "",
+        graduationYear: m.graduationYear || "",
+        mastersBranch: m.mastersBranch || "",
+        profession: m.profession || "",
         mobileNumber: m.mobileNumber || "",
-        EmailAddress: m.EmailAddress || m.email || "",
-        city: m.city || "",
-        state: m.state || "",
+        EmailAddress: m.EmailAddress || "",
+        EmployerBusinessName: m.EmployerBusinessName || "",
         country: m.country || "",
-        NativeLocation: m.NativeLocation || ""
+        state: m.state || "",
+        city: m.city || "",
+        NativeLocation: m.NativeLocation || "",
+        memberCode: m.memberCode || "",
+        username: m.username || "",
+        date: m.date || ""
     }));
 
-    // apply filter
-    if(filterValue !== ""){
+    // Apply filter only when both Sort By and Value are selected
+    if (filterValue !== "" && sortBy !== "") {
+
         filtered = filtered.filter(m =>
-            (m[sortBy] || "").toLowerCase().includes(filterValue)
+            (m[sortBy] || "")
+                .toString()
+                .toLowerCase()
+                .includes(filterValue)
         );
     }
 
-    // sort
-    filtered.sort((a, b) => {
-        return (a[sortBy] || "").localeCompare(b[sortBy] || "");
+    // Apply sorting only when Sort By is selected
+    if (sortBy !== "") {
+
+        filtered.sort((a, b) => {
+
+            return (a[sortBy] || "")
+                .toString()
+                .localeCompare(
+                    (b[sortBy] || "").toString()
+                );
+        });
+    }
+
+    res.json({
+        success: true,
+        members: filtered
     });
 
-    res.json({ success: true, members: filtered });
 });
+
 /////////////////////////////////////////
 
 app.get("/export-member-register", (req, res) => {
@@ -993,49 +1093,137 @@ const fileName =
     res.download(exportFile, fileName);
 
 });
+
 /////////////////////////////////////////
-
-
 app.get("/get-member-filter-values", (req, res) => {
 
     const filePath = path.join(__dirname, "global_members.xlsx");
 
     if (!fs.existsSync(filePath)) {
-        return res.json({ countries: [], states: [], cities: [], natives: [] });
+        return res.json({
+            firstNames: [],
+            lastNames: [],
+            countries: [],
+            states: [],
+            cities: [],
+            natives: [],
+            graduationYears: [],
+            branches: [],
+            usernames: [],
+            dates: []
+        });
     }
 
     const wb = XLSX.readFile(filePath);
     const ws = wb.Sheets[wb.SheetNames[0]];
     const data = XLSX.utils.sheet_to_json(ws);
 
+    let firstNames = new Set();
+    let lastNames = new Set();
     let countries = new Set();
     let states = new Set();
     let cities = new Set();
     let natives = new Set();
+    let graduationYears = new Set();
+    let branches = new Set();
+    let usernames = new Set();
+    let dates = new Set();
 
     data.forEach(row => {
 
-        let countryValue = row.Country || row.COUNTRY || row.country;
-        let stateValue = row.State || row.STATE || row.state;
-        let cityValue = row.City || row.CITY || row.city;
-        let nativeValue = row.NativeLocation || row.NATIVELOCATION || row.nativeLocation || row.Native;
+        if (row.firstName)
+            firstNames.add(row.firstName.toString().trim());
 
-        if (countryValue) countries.add(countryValue.toString().trim());
-        if (stateValue) states.add(stateValue.toString().trim());
-        if (cityValue) cities.add(cityValue.toString().trim());
-        if (nativeValue) natives.add(nativeValue.toString().trim());
+        if (row.lastName)
+            lastNames.add(row.lastName.toString().trim());
+
+        if (row.country)
+            countries.add(row.country.toString().trim());
+
+        if (row.state)
+            states.add(row.state.toString().trim());
+
+        if (row.city)
+            cities.add(row.city.toString().trim());
+
+        if (row.NativeLocation)
+            natives.add(row.NativeLocation.toString().trim());
+
+        if (row.graduationYear)
+            graduationYears.add(row.graduationYear.toString().trim());
+
+        if (row.branch)
+            branches.add(row.branch.toString().trim());
+
+        if (row.username)
+            usernames.add(row.username.toString().trim());
+
+        if (row.date)
+            dates.add(row.date.toString().trim());
+
     });
 
     res.json({
+        firstNames: Array.from(firstNames).sort(),
+        lastNames: Array.from(lastNames).sort(),
         countries: Array.from(countries).sort(),
         states: Array.from(states).sort(),
         cities: Array.from(cities).sort(),
-        natives: Array.from(natives).sort()
+        natives: Array.from(natives).sort(),
+        graduationYears: Array.from(graduationYears).sort(),
+        branches: Array.from(branches).sort(),
+        usernames: Array.from(usernames).sort(),
+        dates: Array.from(dates).sort()
     });
 
 });
 
+//////////
 
+
+app.delete("/delete-member/:memberCode",(req,res)=>{
+    const memberCode=req.params.memberCode;
+
+    let members=readGlobal();
+
+    const member=members.find(
+        m=>m.memberCode===memberCode
+    );
+
+    if(!member){
+
+        return res.json({
+            success:false,
+            message:"Member not found."
+        });
+
+    }
+
+    members=members.filter(
+        m=>m.memberCode!==memberCode
+    );
+
+    writeGlobal(members);
+
+    // Delete personal file
+
+    const personalFile=
+    path.join(
+        memberFolderPath,
+        `${member.firstName}_${member.lastName}.xlsx`
+    );
+
+    if(fs.existsSync(personalFile)){
+
+        fs.unlinkSync(personalFile);
+
+    }
+
+    res.json({
+        success:true,
+        message:"Member deleted successfully."
+    });
+});
 
 
 app.listen(PORT, () => {

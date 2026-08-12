@@ -22,7 +22,8 @@ button{
     padding:6px 10px;
     cursor:pointer;
 }
-</style>
+
+}
 
 #printHeader{
     display:none;
@@ -33,8 +34,10 @@ button{
 #printHeader{
     display:block;
 }
-
 }
+
+</style>
+
 
 <style>
 
@@ -93,13 +96,21 @@ button{
 <!-- SORT -->
 <label>Sort By:</label>
 <select id="sortBy">
-    <option value="">-- Select --</option>
+   
+ <option value="">-- Select --</option>
     <option value="firstName">First Name</option>
-    <option value="lastName">Last Name</option>
-    <option value="city">City</option>
-    <option value="state">State</option>
-    <option value="country">Country</option>
-    <option value="NativeLocation">Native Location</option>
+<option value="lastName">Last Name</option>
+<option value="country">Country</option>
+<option value="state">State</option>
+<option value="city">City</option>
+<option value="NativeLocation">Native Location</option>
+<option value="graduationYear">Graduation Year</option>
+<option value="branch">Branch</option>
+<option value="username">Username</option>
+<option value="date">Date</option>
+    
+
+
 </select>
 
 <!-- VALUE -->
@@ -159,6 +170,8 @@ async function loadFilterValues() {
     const res = await fetch("/get-member-filter-values");
 
     filterData = await res.json();
+console.log(filterData);
+
 }
 
 /* =========================
@@ -167,21 +180,50 @@ async function loadFilterValues() {
 document.getElementById("sortBy").addEventListener("change", function () {
 
     const sortValue = document.getElementById("sortValue");
-    sortValue.innerHTML = `<option value="">-- Select Value --</option>`;
+
+    sortValue.innerHTML =
+        `<option value="">-- Select Value --</option>`;
 
     let list = [];
 
-    if (this.value === "firstName") list = filterData.names || [];
-    if (this.value === "lastName") list = filterData.names || [];
-    if (this.value === "city") list = filterData.cities || [];
-    if (this.value === "state") list = filterData.states || [];
-    if (this.value === "country") list = filterData.countries || [];
-    if (this.value === "NativeLocation") list = filterData.natives || [];
+    if (this.value === "firstName")
+        list = filterData.firstNames || [];
+
+    else if (this.value === "lastName")
+        list = filterData.lastNames || [];
+
+    else if (this.value === "country")
+        list = filterData.countries || [];
+
+    else if (this.value === "state")
+        list = filterData.states || [];
+
+    else if (this.value === "city")
+        list = filterData.cities || [];
+
+    else if (this.value === "NativeLocation")
+        list = filterData.natives || [];
+
+    else if (this.value === "graduationYear")
+        list = filterData.graduationYears || [];
+
+    else if (this.value === "branch")
+        list = filterData.branches || [];
+
+    else if (this.value === "username")
+        list = filterData.usernames || [];
+
+    else if (this.value === "date")
+        list = filterData.dates || [];
 
     list.forEach(v => {
-        sortValue.innerHTML += `<option value="${v}">${v}</option>`;
+
+        sortValue.innerHTML +=
+            `<option value="${v}">${v}</option>`;
+
     });
 
+    // Show all members sorted by the selected field
     loadMembers();
 });
 
@@ -234,7 +276,7 @@ async function loadMembers(){
             <th>Spouce</th>
             <th>Degree</th>
             <th>Branch</th>
-            <th>PassingYear</th>
+            <th>GraduationYear</th>
             <th>Masters</th>
             <th>Profession</th>
             <th>Mobile</th>
@@ -247,6 +289,7 @@ async function loadMembers(){
              <th>code</th>
              <th>Usermane</th>
              <th>Date</th>
+            <th>Delete</th>
 
         </tr>
     `;
@@ -256,7 +299,7 @@ async function loadMembers(){
     result.members.forEach(m => {
 
         const rowText =
-        `${m.firstName} ${m.lastName}, ${m.mobileNumber}, ${m.EmailAddress}, ${m.city}, ${m.state}, ${m.country}, ${m.NativeLocation}`;
+        `${m.firstName}, ${m.lastName}, ${m.spouseName}, ${m.degree}, ${m.branch}, ${m.graduationYear},  ${m.mastersBranch}, ${m.profession}, ${m.mobileNumber}, ${m.EmailAddress}, ${m.EmployerBusinessName}, ${m.country},  ${m.state}, ${m.city}, ${m.NativeLocation}, ${m.memberCode}, ${m.username}, ${m.date}`;
 
         lastListText += rowText + "\n";
 
@@ -280,6 +323,14 @@ async function loadMembers(){
                 <td>${m.memberCode}</td>
                 <td>${m.username}</td>
                  <td>${m.date}</td>
+
+<td>
+<button onclick="deleteMember('${m.memberCode}')">
+🗑 Delete
+</button>
+</td>
+
+
            </tr>
         `;
     });
@@ -313,12 +364,44 @@ function copyAll() {
 /* =========================
    INIT
 ========================= */
+
+
+
+function deleteMember(memberCode){
+
+    if(confirm("Delete this member ?")){
+
+        fetch("/delete-member/" + memberCode,{
+            method:"DELETE"
+        })
+        .then(r=>r.json())
+        .then(result=>{
+
+            alert(result.message);
+
+            if(result.success){
+
+                loadMembers();
+
+            }
+
+        });
+
+    }
+
+}
+
+
+
 window.onload = async function(){
-    await loadFilterValues();
+
+    // First display the complete Member Register
     await loadMembers();
+
+    // Then load values for the Value dropdown
+    await loadFilterValues();
+
 };
-
-
 function exportRegister() {
 
     window.location.href = "/export-member-register";
