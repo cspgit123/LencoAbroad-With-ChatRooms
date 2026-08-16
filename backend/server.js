@@ -228,7 +228,7 @@ app.post("/admin-login", (req, res) => {
     }
 
     // ADMIN 2 - Administrator without Member Register
-    if (username === "admin2" && password === "admin12322") {
+    if (username === "admin" && password === "admin123") {
 
         return res.json({
             success: true,
@@ -243,6 +243,8 @@ app.post("/admin-login", (req, res) => {
 
 });
 
+
+
 //Update Dropdown Route
 
 app.get("/get-location-list", (req, res) => {
@@ -250,49 +252,108 @@ app.get("/get-location-list", (req, res) => {
     const filePath = path.join(__dirname, "global_members.xlsx");
 
     if (!fs.existsSync(filePath)) {
-        return res.json({firstNames: [], lastNames:[], countries: [], states: [], cities: [] });
-
-
-
-
-
-app.get("/get-member-filter-values", (req, res) => {
-
-    const filePath = path.join(__dirname, "global_members.xlsx");
-
-    if (!fs.existsSync(filePath)) {
-        return res.json({firstNames: [], lastNames: [], countries: [], states: [], cities: [], natives: [] });
+        return res.json({
+            countries: [],
+            states: [],
+            cities: []
+        });
     }
 
     const wb = XLSX.readFile(filePath);
     const ws = wb.Sheets[wb.SheetNames[0]];
     const data = XLSX.utils.sheet_to_json(ws);
 
-let firstNames = new Set();
-let lastNames = new Set();
-let countries = new Set();
-let states = new Set();
-let cities = new Set();
-let NativeLocations = new Set();
-let branches = new Set();
-let graduationYears = new Set();
-let usernames = new Set();
-let dates = new Set();
-
+    let countries = new Set();
+    let states = new Set();
+    let cities = new Set();
 
     data.forEach(row => {
- if (row.firstName) firstNames.add(row.firstName.toString().trim());
-if (row.lastName) lastNames.add(row.lastName.toString().trim());
-if (row.country) countries.add(row.country.toString().trim());
-if (row.state) states.add(row.state.toString().trim());
-if (row.city) cities.add(row.city.toString().trim());
-if (row.NativeLocation) NativeLocations.add(row.NativeLocation.toString().trim());
-if (row.username) usernames.add(row.username.toString().trim());
-if (row.graduationYear) graduationYears.add(row.graduationYear.toString().trim());
-if (row.branch) branches.add(row.branch.toString().trim());
-if (row.date) dates.add(row.date.toString().trim());
 
-        
+        if (row.country)
+            countries.add(row.country.toString().trim());
+
+        if (row.state)
+            states.add(row.state.toString().trim());
+
+        if (row.city)
+            cities.add(row.city.toString().trim());
+
+    });
+
+    res.json({
+        countries: Array.from(countries).sort(),
+        states: Array.from(states).sort(),
+        cities: Array.from(cities).sort()
+    });
+
+});
+//========================== 
+
+app.get("/get-member-filter-values", (req, res) => {
+
+    const filePath = path.join(__dirname, "global_members.xlsx");
+
+    if (!fs.existsSync(filePath)) {
+        return res.json({
+            firstNames: [],
+            lastNames: [],
+            countries: [],
+            states: [],
+            cities: [],
+            natives: [],
+            graduationYears: [],
+            branches: [],
+            usernames: [],
+            dates: []
+        });
+    }
+
+    const wb = XLSX.readFile(filePath);
+    const ws = wb.Sheets[wb.SheetNames[0]];
+    const data = XLSX.utils.sheet_to_json(ws);
+
+    let firstNames = new Set();
+    let lastNames = new Set();
+    let countries = new Set();
+    let states = new Set();
+    let cities = new Set();
+    let natives = new Set();
+    let graduationYears = new Set();
+    let branches = new Set();
+    let usernames = new Set();
+    let dates = new Set();
+
+    data.forEach(row => {
+
+        if (row.firstName)
+            firstNames.add(row.firstName.toString().trim());
+
+        if (row.lastName)
+            lastNames.add(row.lastName.toString().trim());
+
+        if (row.country)
+            countries.add(row.country.toString().trim());
+
+        if (row.state)
+            states.add(row.state.toString().trim());
+
+        if (row.city)
+            cities.add(row.city.toString().trim());
+
+        if (row.NativeLocation)
+            natives.add(row.NativeLocation.toString().trim());
+
+        if (row.graduationYear)
+            graduationYears.add(row.graduationYear.toString().trim());
+
+        if (row.branch)
+            branches.add(row.branch.toString().trim());
+
+        if (row.username)
+            usernames.add(row.username.toString().trim());
+
+        if (row.date)
+            dates.add(row.date.toString().trim());
 
     });
 
@@ -302,82 +363,17 @@ if (row.date) dates.add(row.date.toString().trim());
         countries: Array.from(countries).sort(),
         states: Array.from(states).sort(),
         cities: Array.from(cities).sort(),
-        natives: Array.from(NativeLocations).sort(),
-	usernames: Array.from(usernames).sort(),
-        graduationYears: Array.from(graduationYears).sort(),        
+        natives: Array.from(natives).sort(),
+        graduationYears: Array.from(graduationYears).sort(),
         branches: Array.from(branches).sort(),
-        dates: Array.from(dates).sort(),
-
-     
+        usernames: Array.from(usernames).sort(),
+        dates: Array.from(dates).sort()
     });
-});
 
-    }
-
-    const wb = XLSX.readFile(filePath);
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const data = XLSX.utils.sheet_to_json(ws);
-
-let firstNames = new Set();
-let lastNames = new Set();
-let countries = new Set();
-let states = new Set();
-let cities = new Set();
-let NativeLocations = new Set();
-let years = new Set();
-let branches = new Set();
-let usernames = new Set();
-let dates = new Set();
+});   
 
 
-   data.forEach(row => {
-
-let firstNameValue = row.firstName;
-let lastNameValue = row.lastName;
-let countryValue = row.country;
-let stateValue = row.state;
-let cityValue = row.city;
-let NativeLocationValue = row.NativeLocation;
-let branchValue = row.branch;
-let graduationYearValue = row.graduationYear;
-let usernameValue = row.username;
-let dateValue = row.date;
-;
-
-   
-    if (firstNameValue) firstNames.add(firstNameValue.toString().trim());
-    if (lastNameValue) lastNames.add(lastNameValue.toString().trim());
-    if (countryValue) countries.add(countryValue.toString().trim());
-    if (stateValue) states.add(stateValue.toString().trim());
-    if (cityValue) cities.add(cityValue.toString().trim());
-    if (NativeLocationValue) NativeLocations.add(NativeLocationValue.toString().trim());
-if (branchValue)
-    branches.add(branchValue.toString().trim());
-if (graduationYearValue)
-    graduationYears.add(graduationYearValue.toString().trim());    if (branchesValue) branchess.add(branchValue.toString().trim());
-    if (usernameValue) usernames.add(usernameValue.toString().trim());
-    if (dateValue) dates.add(dateValue.toString().trim())
-
-
-});
-
-  res.json({
   
-    firstNames: Array.from(firstNames).sort(),
-    lastNames: Array.from(lastNames).sort(),
-    countries: Array.from(countries).sort(),
-    states: Array.from(states).sort(),
-    cities: Array.from(cities).sort(),
-    NativeLocations: Array.from(NativeLocations).sort(),
-    branches: Array.from(branches).sort(),
-    graduationYears: Array.from(graduationYears).sort(),
-    usernames: Array.from(usernames).sort(),
-    dates: Array.from(dates).sort()
-
-});
-});
-
-
 
 // ---------------------------
 // REGISTER Route
@@ -1095,89 +1091,6 @@ const fileName =
 });
 
 /////////////////////////////////////////
-app.get("/get-member-filter-values", (req, res) => {
-
-    const filePath = path.join(__dirname, "global_members.xlsx");
-
-    if (!fs.existsSync(filePath)) {
-        return res.json({
-            firstNames: [],
-            lastNames: [],
-            countries: [],
-            states: [],
-            cities: [],
-            natives: [],
-            graduationYears: [],
-            branches: [],
-            usernames: [],
-            dates: []
-        });
-    }
-
-    const wb = XLSX.readFile(filePath);
-    const ws = wb.Sheets[wb.SheetNames[0]];
-    const data = XLSX.utils.sheet_to_json(ws);
-
-    let firstNames = new Set();
-    let lastNames = new Set();
-    let countries = new Set();
-    let states = new Set();
-    let cities = new Set();
-    let natives = new Set();
-    let graduationYears = new Set();
-    let branches = new Set();
-    let usernames = new Set();
-    let dates = new Set();
-
-    data.forEach(row => {
-
-        if (row.firstName)
-            firstNames.add(row.firstName.toString().trim());
-
-        if (row.lastName)
-            lastNames.add(row.lastName.toString().trim());
-
-        if (row.country)
-            countries.add(row.country.toString().trim());
-
-        if (row.state)
-            states.add(row.state.toString().trim());
-
-        if (row.city)
-            cities.add(row.city.toString().trim());
-
-        if (row.NativeLocation)
-            natives.add(row.NativeLocation.toString().trim());
-
-        if (row.graduationYear)
-            graduationYears.add(row.graduationYear.toString().trim());
-
-        if (row.branch)
-            branches.add(row.branch.toString().trim());
-
-        if (row.username)
-            usernames.add(row.username.toString().trim());
-
-        if (row.date)
-            dates.add(row.date.toString().trim());
-
-    });
-
-    res.json({
-        firstNames: Array.from(firstNames).sort(),
-        lastNames: Array.from(lastNames).sort(),
-        countries: Array.from(countries).sort(),
-        states: Array.from(states).sort(),
-        cities: Array.from(cities).sort(),
-        natives: Array.from(natives).sort(),
-        graduationYears: Array.from(graduationYears).sort(),
-        branches: Array.from(branches).sort(),
-        usernames: Array.from(usernames).sort(),
-        dates: Array.from(dates).sort()
-    });
-
-});
-
 //////////
 
 

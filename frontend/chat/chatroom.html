@@ -139,17 +139,28 @@
       <br><br>
 
       <label><b>Select Image / Video / PDF:</b></label><br>
-      <input type="file" id="mediaFile">
-      <br><br>
-
+<input type="file" id="mediaFile">
+      <br>
 <button class="btn" onclick="sendMessage()">SEND</button>
+<br><br>
+
+
+<label><b>Select Speech to Text Language</b></label>
+<select id="speechLanguage">
+    <option value="en-US">English</option>
+    <option value="gu-IN">ગુજરાતી (Gujarati)</option>
+    <option value="hi-IN">हिन्दी (Hindi)</option>
+</select>
+<br>
 
 <button class="btn btn-gray" id="micBtn" onclick="startSpeech()">🎤 MIC</button>
-
 <button class="btn btn-danger" onclick="stopSpeech()">⛔ STOP</button>
-
+<br>
 <span id="micStatus" style="margin-left:10px; font-weight:bold; color:gray;">
   Mic OFF
+
+
+
 </span>
 
     </div>
@@ -184,7 +195,9 @@ function startSpeech(){
   const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   recognition = new SpeechRecognition();
-  recognition.lang = "en-US";
+ // recognition.lang = "en-US";
+recognition.lang = document.getElementById("speechLanguage").value;
+
   recognition.interimResults = false;
   recognition.maxAlternatives = 1;
 
